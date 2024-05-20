@@ -7,8 +7,15 @@
     "start": "ts-node src/server.ts",
     "dev": "nodemon src/server.ts",
     "build": "webpack",
-    "test": "jest",
+    "test": "jest --runInBand --detectOpenHandles",
     "lint": "eslint 'src/**/*.{ts,js}'"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.ts"
+    ]
   },
   "repository": {
     "type": "git",
@@ -29,6 +36,7 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^20.12.12",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
@@ -36,6 +44,9 @@
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^9.2.0",
+    "ts-jest": "^29.1.2",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
