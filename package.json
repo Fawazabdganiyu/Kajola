@@ -1,0 +1,46 @@
+{
+  "name": "kajola",
+  "version": "1.0.0",
+  "description": "Kajola is a web application designed to serve as a platform for buyers to find what they need from local businesses and service providers and for sellers to reach a wider audience.",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/server.ts",
+    "dev": "nodemon src/server.ts",
+    "build": "webpack",
+    "test": "jest",
+    "lint": "eslint 'src/**/*.{ts,js}'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fawazabdganiyu/Kajola.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Fawazabdganiyu/Kajola/issues"
+  },
+  "homepage": "https://github.com/Fawazabdganiyu/Kajola#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/mongoose": "^5.11.97",
+    "@types/node": "^20.12.12",
+    "@typescript-eslint/eslint-plugin": "^7.9.0",
+    "@typescript-eslint/parser": "^7.9.0",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-node-externals": "^3.0.0"
+  }
+}
