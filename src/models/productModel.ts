@@ -39,7 +39,7 @@ const productSchema = new Schema({
     default: 0,
   },
   desc: String,
-  image: [String],
+  images: [String],
 }, {
   timestamps: true
 });
