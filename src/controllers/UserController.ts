@@ -13,7 +13,9 @@ export default class UsersController {
     if (!user) {
       return next(new CustomError(404, 'User not found'));
     }
-    res.status(200).json(user);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userData } = user;
+    res.status(200).json({ ...userData });
   }
 
   // DELETE /user/:id - Delete user by id
