@@ -1,3 +1,4 @@
+import { compare, hash, genSalt } from 'bcryptjs';
 import { Schema, model } from 'mongoose';
 
 const userSchema = new Schema({
@@ -40,5 +41,20 @@ const userSchema = new Schema({
 }, {
   timestamps: true
 });
+
+// Hash the password before saving the user model
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  const salt = await genSalt(10);
+  this.password = await hash(this.password, salt);
+  next();
+});
+
+// Compare the entered password with the password in the database
+userSchema.methods.comparePassword = async function (password: string) {
+  return compare(password, this.password);
+};
 
 export default model('User', userSchema);
