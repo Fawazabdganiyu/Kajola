@@ -38,8 +38,14 @@ const userSchema = new Schema({
   },
   desc: String,
   img: String,
-}, {
-  timestamps: true
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // Hash the password before saving the user model
