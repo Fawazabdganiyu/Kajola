@@ -36,6 +36,15 @@ const userSchema = new Schema({
     enum: ['Buyer', 'Seller'],
     default: 'Buyer',
   },
+  wishlist: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Product',
+    },
+  ],
+  resetToken: String,
+  resetTokenExpiry: Date,
+  passwordUpdatedAt: Date,
   desc: String,
   img: String,
   createdAt: {

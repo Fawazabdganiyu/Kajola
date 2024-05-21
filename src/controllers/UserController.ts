@@ -6,6 +6,7 @@ import User from '../models/userModel';
 export interface CustomRequest extends Request {
   userId: string;
 }
+
 export default class UsersController {
   // GET /user/:id - Get user by id
   static async getUser(req: Request, res: Response, next: NextFunction): Promise<void> {
