@@ -9,8 +9,7 @@ afterAll(async () => await dbDisconnect());
 const testUserId = new Types.ObjectId();
 
 test('all model attributes', async () => {
-  let product: any;
-  product = new Product({
+  const product = new Product({
     userId: testUserId,
     category: 'Category 1',
     name: 'Product 1',

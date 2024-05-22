@@ -40,8 +40,14 @@ const productSchema = new Schema({
   },
   desc: String,
   images: [String],
-}, {
-  timestamps: true
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 productSchema.methods.addReview = function (rating: number) {
@@ -57,6 +63,6 @@ productSchema.methods.addReview = function (rating: number) {
 
   // Save the updated product
   return this.save();
-}
+};
 
 export default model('Product', productSchema);
