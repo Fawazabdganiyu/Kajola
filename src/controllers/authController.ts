@@ -2,11 +2,11 @@ import * as crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 
 import CustomError from '../../utils/customError';
-import User from '../../src/models/userModel';
 import sendEmail from '../../utils/sendEmail';
+import User from '../../src/models/userModel';
 
 export default class AuthController {
-  // POST /user/request-password-reset - Get reset token for password reset
+  // POST /auth/password-reset - Get reset token for password reset
   static async postResetToken(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -39,18 +39,7 @@ export default class AuthController {
     }
   }
 
-  // POST /user/password-reset/:resetToken - Reset user password with reset token
-  static async postResetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
-    const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
-    if (!user) {
-      return next(new CustomError(400, 'Invalid or expired reset token'));
-    }
-
-    res.status(200).json({ message: 'Reset token successfully validated' });
-  }
-
-  // PUT /user/password-update/:resetToken - Update user password
+  // PUT /auth/password-update/:resetToken - Update user password
   static async putUpdatePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
     const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
