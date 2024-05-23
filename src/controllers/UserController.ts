@@ -1,16 +1,13 @@
-import { Request, Response, NextFunction} from 'express';
+import { Request, Response, NextFunction } from 'express';
 
-import CustomError from '../../utils/customError';
+import CustomError from '../utils/customError';
 import User from '../models/userModel';
-
-export interface CustomRequest extends Request {
-  userId: string;
-}
+import { IRequest, IUser } from '../types';
 
 export default class UsersController {
   // GET /user/:id - Get user by id
   static async getUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const user = await User.findById(req.params.id);
+    const user: IUser | null = await User.findById(req.params.id);
     if (!user) {
       return next(new CustomError(404, 'User not found'));
     }
@@ -20,8 +17,8 @@ export default class UsersController {
   }
 
   // DELETE /user/:id - Delete user by id
-  static async deleteUser(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
-    const user = await User.findById(req.params.id);
+  static async deleteUser(req: IRequest, res: Response, next: NextFunction): Promise<void> {
+    const user: IUser | null = await User.findById(req.params.id);
     if (!user) {
       return next(new CustomError(404, 'User not found'));
     }

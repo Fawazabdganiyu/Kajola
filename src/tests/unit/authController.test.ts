@@ -18,7 +18,7 @@ describe('AuthController', () => {
     const next = jest.fn();
     jest.spyOn(User, 'findOne').mockResolvedValue({ _id: '123', email: 'test@example.com' });
     jest.spyOn(User, 'findByIdAndUpdate').mockResolvedValue(true);
-   
+
     await AuthController.postResetToken(req, res, next);
 
     expect(User.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });

@@ -1,7 +1,7 @@
 import { model, Types } from 'mongoose';
 
 import { dbConnect, dbDisconnect } from '../../utils/mongoMemoryServer';
-import Product from '../../src/models/productModel';
+import Product from '../../models/productModel';
 
 beforeAll(async () => await dbConnect());
 afterAll(async () => await dbDisconnect());
