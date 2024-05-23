@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
-import { Response, NextFunction } from 'express';
 import env from '../config/environment';
+import { Response, NextFunction } from 'express';
 
 import CustomError from '../utils/customError';
-import { CustomRequest } from '../controllers/UserController';
+import { IRequest } from '../types/request';
 
-export default function auth(req: CustomRequest, res: Response, next: NextFunction) {
+export default function auth(req: IRequest, res: Response , next: NextFunction) {
   const token = req.header('X-token');
   if (!token) {
     return next(new CustomError(401, 'Access denied. No token provided.'));
