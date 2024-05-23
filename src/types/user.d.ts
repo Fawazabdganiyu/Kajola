@@ -1,6 +1,7 @@
 import { Document } from 'mongoose';
 
 export interface IUser extends Document {
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -16,6 +17,8 @@ export interface IUser extends Document {
   desc?: string;
   img?: string;
   isVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   comparePassword(password: string): Promise<boolean>;
   getSignedJwtToken(): string;
 }

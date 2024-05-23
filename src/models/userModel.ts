@@ -54,8 +54,14 @@ const userSchema = new Schema<IUser>({
     type: Boolean,
     default: false,
   },
-    }, {
-    timestamps: true,  // This option will add createdAt and updatedAt fields automatically
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // Hash the password before saving the user model

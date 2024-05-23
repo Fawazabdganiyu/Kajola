@@ -1,6 +1,6 @@
 import CustomError from '../../utils/customError';
-import User from '../../src/models/userModel';
-import UsersController from '../../src/controllers/UserController';
+import User from '../../models/userModel';
+import UsersController from '../../controllers/UserController';
 
 describe('getUser', () => {
   // User is found and returned without the password field
