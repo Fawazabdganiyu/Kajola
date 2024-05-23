@@ -1,22 +1,23 @@
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 
-import CustomError from '../../utils/customError';
-import User from '../../src/models/userModel';
-import sendEmail from '../../utils/sendEmail';
+import CustomError from '../utils/customError';
+import User from '../models/userModel';
+import { IUser } from '../types';
+import sendEmail from '../utils/sendEmail';
 
 export default class AuthController {
-  // POST /user/request-password-reset - Get reset token for password reset
+  // POST /auth/password-reset - Get reset token for password reset
   static async postResetToken(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { email } = req.body;
-    const user = await User.findOne({ email });
+    const user: IUser | null = await User.findOne({ email });
     if (!user) {
       return next(new CustomError(404, 'User not found'));
     }
 
     // Generate reset token
-    const token = crypto.randomBytes(32).toString('hex');
-    const resetToken = crypto.createHash('sha256').update(token).digest('hex');
+    const token = crypto.randomBytes(32).toString('hex') as string;
+    const resetToken = crypto.createHash('sha256').update(token).digest('hex') as string;
     const resetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     await User.findByIdAndUpdate(user._id, { resetToken, resetTokenExpiry });
@@ -33,27 +34,16 @@ export default class AuthController {
         message,
       });
       res.status(200).json({ message: 'Reset token sent to email' });
-    } catch (err) {
+    } catch (err: any) {
       await User.findByIdAndUpdate(user._id, { resetToken: undefined, resetTokenExpiry: undefined });
       return next(new CustomError(500, err.message));
     }
   }
 
-  // POST /user/password-reset/:resetToken - Reset user password with reset token
-  static async postResetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
-    const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
-    if (!user) {
-      return next(new CustomError(400, 'Invalid or expired reset token'));
-    }
-
-    res.status(200).json({ message: 'Reset token successfully validated' });
-  }
-
-  // PUT /user/password-update/:resetToken - Update user password
+  // PUT /auth/password-update/:resetToken - Update user password
   static async putUpdatePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
-    const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
+    const resetToken: string = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+    const user: IUser | null = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
     if (!user) {
       return next(new CustomError(400, 'Invalid or expired reset token'));
     }

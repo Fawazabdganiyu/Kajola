@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction} from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 import CustomError from '../utils/customError';
 import User from '../models/userModel';
