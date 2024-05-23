@@ -17,8 +17,6 @@ export interface IUser extends Document {
   desc?: string;
   img?: string;
   isVerified: boolean;
-  createdAt: Date;
-  updatedAt: Date;
   comparePassword(password: string): Promise<boolean>;
   getSignedJwtToken(): string;
 }

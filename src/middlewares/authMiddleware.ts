@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
-import env from '../config/environment';
 import { Response, NextFunction } from 'express';
+import env from '../config/environment';
 
 import CustomError from '../utils/customError';
-import { IRequest } from '../types/request';
+import { CustomRequest } from '../controllers/UserController';
 
 export default function auth(req: IRequest, res: Response , next: NextFunction) {
   const token = req.header('X-token');
