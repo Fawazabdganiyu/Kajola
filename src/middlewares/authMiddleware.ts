@@ -1,7 +1,8 @@
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
+import env from '../config/environment';
 
-import CustomError from '../../utils/customError';
+import CustomError from '../utils/customError';
 import { CustomRequest } from '../controllers/UserController';
 
 export default function auth(req: CustomRequest, res: Response, next: NextFunction) {
@@ -11,10 +12,13 @@ export default function auth(req: CustomRequest, res: Response, next: NextFuncti
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, env.JWT_SECRET as string) as jwt.JwtPayload;
+    if (!decoded.userId) {
+      throw new Error('Invalid token.');
+    }
     req.userId = decoded.userId;
     next();
-  } catch (error) {
-    return next(new CustomError(400, 'Invalid token.'));
+  } catch (error: any) {
+    return next(new CustomError(400, error.message));
   }
 }

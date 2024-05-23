@@ -1,7 +1,10 @@
 import { compare, hash, genSalt } from 'bcryptjs';
 import { Schema, model } from 'mongoose';
+import jwt from 'jsonwebtoken';
+import env from '../config/environment';
+import { IUser } from '../types/user';
 
-const userSchema = new Schema({
+const userSchema = new Schema<IUser>({
   firstName: {
     type: String,
     required: true,
@@ -47,14 +50,12 @@ const userSchema = new Schema({
   passwordUpdatedAt: Date,
   desc: String,
   img: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  isVerified: {
+    type: Boolean,
+    default: false,
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
+    }, {
+    timestamps: true,  // This option will add createdAt and updatedAt fields automatically
 });
 
 // Hash the password before saving the user model
@@ -68,8 +69,15 @@ userSchema.pre('save', async function (next) {
 });
 
 // Compare the entered password with the password in the database
-userSchema.methods.comparePassword = async function (password: string) {
+userSchema.methods.comparePassword = function (password: string): Promise<boolean> {
   return compare(password, this.password);
 };
 
-export default model('User', userSchema);
+// Sign JWT and return
+userSchema.methods.getSignedJwtToken = function (): string {
+  return jwt.sign({ id: this._id }, env.JWT_SECRET as string, {
+    expiresIn: env.JWT_EXPIRATION,
+  });
+};
+
+export default model<IUser>('User', userSchema);

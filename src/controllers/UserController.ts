@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction} from 'express';
 
-import CustomError from '../../utils/customError';
+import CustomError from '../utils/customError';
 import User from '../models/userModel';
 
 export interface CustomRequest extends Request {
