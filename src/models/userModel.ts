@@ -2,7 +2,7 @@ import { compare, hash, genSalt } from 'bcryptjs';
 import { Schema, model } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import env from '../config/environment';
-import { IUser } from '../types/user';
+import { IUser } from '../types';
 
 const userSchema = new Schema<IUser>({
   firstName: {
