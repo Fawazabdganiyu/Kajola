@@ -2,9 +2,11 @@ import { Router } from 'express';
 import UsersController from '../controllers/UserController';
 import authMiddleware from '../middlewares/authMiddleware';
 
-const userRouter = Router();
+const router = Router();
 
-userRouter.use(authMiddleware);
+router.use(authMiddleware);
 
-userRouter.get('/:id', UsersController.getUser);
-userRouter.delete('/:id', UsersController.deleteUser);
+router.get('/:id', UsersController.getUser);
+router.delete('/:id', UsersController.deleteUser);
+
+export default router;
