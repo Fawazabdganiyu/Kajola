@@ -5,6 +5,6 @@ import authMiddleware from '../middlewares/authMiddleware';
 const userRouter = Router();
 
 userRouter.get('/:id', UsersController.getUser);
-userRouter.delete('/:id', UsersController.deleteUser);
+userRouter.delete('/:id', authMiddleware, UsersController.deleteUser);
 
 export default userRouter;
