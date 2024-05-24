@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction} from 'express';
 
 import CustomError from '../utils/customError';
 import User from '../models/userModel';
@@ -6,23 +6,18 @@ import User from '../models/userModel';
 export default class UsersController {
   // GET /user/:id - Get user by id
   static async getUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id);
       if (!user) {
         return next(new CustomError(404, 'User not found'));
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...userData } = user;
       res.status(200).json({ ...userData });
-    } catch (error) {
-      next(new CustomError(500, 'Error getting user'));
-    }
   }
 
   // DELETE /user/:id - Delete user by id
   static async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id);
       if (!user) {
         return next(new CustomError(404, 'User not found'));
       }
@@ -31,8 +26,5 @@ export default class UsersController {
       }
       await User.findByIdAndDelete(req.params.id);
       res.status(204).end();
-    } catch (error) {
-      next(new CustomError(500, 'Error dleting User'));
-    }
   }
 }
