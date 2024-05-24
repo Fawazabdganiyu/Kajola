@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 
 export interface IUser extends Document {
-  _id: string;
+  _id: Schema.Types.ObjectId;
   firstName: string;
   lastName: string;
   email: string;
@@ -10,13 +10,15 @@ export interface IUser extends Document {
   city: string;
   state: string;
   userType: 'Buyer' | 'Seller';
-  wishlist: Array<string>;
+  wishlist: string[];
   resetToken?: string;
   resetTokenExpiry?: Date;
   passwordUpdatedAt?: Date;
   desc?: string;
   img?: string;
   isVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   comparePassword(password: string): Promise<boolean>;
   getSignedJwtToken(): string;
 }
