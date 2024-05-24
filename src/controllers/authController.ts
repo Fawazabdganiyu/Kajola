@@ -1,23 +1,123 @@
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 
 import CustomError from '../utils/customError';
-import User from '../models/userModel';
-import { IUser } from '../types';
-import sendEmail from '../utils/sendEmail';
+import User from '../../src/models/userModel';
+import { sendMail } from '../config/mail';
+import jwt from 'jsonwebtoken';
+import env from '../config/environment';
+import validator from 'validator';
+import { JwtPayload } from '../types';
 
 export default class AuthController {
-  // POST /auth/password-reset - Get reset token for password reset
-  static async postResetToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+  // POST auth/signup - Sign up new user
+  static async signup(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { email, password, firstName, lastName, phone, city, state, userType } = req.body;
+
+      // Validate input
+      if (!email || !password || !firstName || !lastName || !phone || !city || !state || !userType) {
+        return next(new CustomError(400, 'All fields are required'));
+      }
+
+      if (!validator.isEmail(email)) {
+        return next(new CustomError(400, 'Invalid email format'));
+      }
+
+      if (!validator.isStrongPassword(password)) {
+        return next(new CustomError(400, 'Password is not strong enough'));
+      }
+
+      const userExists = await User.findOne({ email });
+      if (userExists) {
+        return next(new CustomError(400, 'User already exists'));
+      }
+
+      // Create user
+      const user = await User.create(req.body);
+
+      // Create token
+      const token = user.getSignedJwtToken();
+
+      const verificationLink = `http://localhost:${env.PORT}/auth/verify/${token}`;
+
+      await sendMail(email, 'Verify Email', `Click here to verify your email: ${verificationLink}`);
+
+      return res.status(201).send('User registered. Please check your email to verify your account.');
+  }
+
+  // POST auth/login - Login user
+  public static async login(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { email, password } = req.body;
+
+      if (!email || !password) {
+        return next(new CustomError(400, 'Please provide email and password'));
+      }
+
+      const user = await User.findOne({ email }).select('+password');
+
+      if (!user) {
+        return next(new CustomError(401, 'Invalid credentials'));
+      }
+
+      const isMatch = await user.comparePassword(password);
+
+      if (!isMatch) {
+        return next(new CustomError(401, 'Invalid credentials'));
+      }
+
+      const token = user.getSignedJwtToken();
+      res.cookie('token', token, { httpOnly: true });
+
+      return res.status(200).json({ token });
+  }
+  
+  // POST auth/logout - Logout user
+  public static async logout(req: Request, res: Response): Promise<Response> {
+    res.cookie('token', 'none', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
+
+    return res.status(200).json({ success: true, data: 'User logged out successfully' });
+  }
+
+  // GET auth/verify - Verify a new user email
+  public static async verifyEmail(req: Request, res: Response): Promise<Response> {
+    const { token } = req.params;
+
+      if (!token) {
+        return res.status(400).send('Invalid token');
+      }
+
+      const decoded = jwt.verify(token, env.JWT_SECRET as string) as JwtPayload;
+
+      const user = await User.findById(decoded._id);
+
+      if (!user) {
+        return res.status(404).send('User not found');
+      }
+
+      if (user.isVerified) {
+        return res.status(400).send('Email already verified');
+      }
+
+      user.isVerified = true;
+      await user.save();
+
+      return res.status(200).send('Email verified successfully');
+  }
+
+  // POST auth/request-password-reset - Get reset token for password reset
+  static async resetToken(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { email } = req.body;
-    const user: IUser | null = await User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       return next(new CustomError(404, 'User not found'));
     }
 
     // Generate reset token
-    const token = crypto.randomBytes(32).toString('hex') as string;
-    const resetToken = crypto.createHash('sha256').update(token).digest('hex') as string;
+    const token = crypto.randomBytes(32).toString('hex');
+    const resetToken = crypto.createHash('sha256').update(token).digest('hex');
     const resetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     await User.findByIdAndUpdate(user._id, { resetToken, resetTokenExpiry });
@@ -28,22 +128,29 @@ export default class AuthController {
 
     // Send email with nodemailer
     try {
-      sendEmail({
-        email: user.email,
-        subject: 'Password Reset Token',
-        message,
-      });
+      sendMail(user.email, 'Password Reset Token', message );
       res.status(200).json({ message: 'Reset token sent to email' });
-    } catch (err: any) {
+    } catch (err) {
       await User.findByIdAndUpdate(user._id, { resetToken: undefined, resetTokenExpiry: undefined });
-      return next(new CustomError(500, err.message));
+      return next(new CustomError(500, (err as Error).message));
     }
   }
 
-  // PUT /auth/password-update/:resetToken - Update user password
-  static async putUpdatePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const resetToken: string = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
-    const user: IUser | null = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
+  // POST auth/password-reset/:resetToken - Reset user password with reset token
+  static async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+    const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
+    if (!user) {
+      return next(new CustomError(400, 'Invalid or expired reset token'));
+    }
+
+    res.status(200).json({ message: 'Reset token successfully validated' });
+  }
+
+  // PUT auth/password-update/ - Update user password
+  static async updatePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+    const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
     if (!user) {
       return next(new CustomError(400, 'Invalid or expired reset token'));
     }

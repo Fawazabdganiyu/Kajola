@@ -1,24 +1,30 @@
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { Response, NextFunction } from 'express';
-import env from '../config/environment';
-
 import CustomError from '../utils/customError';
-import { CustomRequest } from '../controllers/UserController';
+import User from '../models/userModel';
+import env from '../config/environment';
+import { JwtPayload } from '../types';
 
-export default function auth(req: IRequest, res: Response , next: NextFunction) {
-  const token = req.header('X-token');
+const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  
   if (!token) {
-    return next(new CustomError(401, 'Access denied. No token provided.'));
+    return next(new CustomError(401, 'Not authorized, no token'));
   }
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET as string) as jwt.JwtPayload;
-    if (!decoded.userId) {
-      throw new Error('Invalid token.');
+    const decoded = jwt.verify(token, env.JWT_SECRET as string) as JwtPayload;
+    req.userId = decoded._id;
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return next(new CustomError(401, 'Not authorized, user not found'));
     }
-    req.userId = decoded.userId;
+
     next();
-  } catch (error: any) {
-    return next(new CustomError(400, error.message));
+  } catch (error) {
+    next(new CustomError(401, 'Not authorized, token failed'));
   }
-}
+};
+
+export default authMiddleware;
