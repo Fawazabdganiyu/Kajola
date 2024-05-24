@@ -11,5 +11,5 @@ export default {
 
   // JWT CONFIG
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRATION: process.env.JWT_EXPIRATION as string,
+  JWT_EXPIRATION: process.env.JWT_EXPIRATION as string || '24h',
 };

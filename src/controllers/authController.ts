@@ -1,8 +1,8 @@
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 
 import CustomError from '../utils/customError';
-import User from '../../src/models/userModel';
+import User from '../models/userModel';
 import { sendMail } from '../config/mail';
 import jwt from 'jsonwebtoken';
 import env from '../config/environment';
@@ -10,14 +10,22 @@ import validator from 'validator';
 import { JwtPayload } from '../types';
 
 export default class AuthController {
-  // POST auth/signup - Sign up new user
+  // POST /auth/signup - Sign up new user
   static async signup(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
-    const { email, password, firstName, lastName, phone, city, state, userType } = req.body;
+    const { email, password, firstName, lastName, phone, city, state, userType, desc, img } = req.body;
 
       // Validate input
-      if (!email || !password || !firstName || !lastName || !phone || !city || !state || !userType) {
-        return next(new CustomError(400, 'All fields are required'));
-      }
+      if (!email) return next(new CustomError(400, 'Email is missing'));
+      if (!password) return next(new CustomError(400, 'Password is missing'));
+      if (!firstName) return next(new CustomError(400, 'First name is missing'));
+      if (!lastName) return next(new CustomError(400, 'Last name is missing'));
+      if (!phone) return next(new CustomError(400, 'Phone number is missing'));
+      if (!city) return next(new CustomError(400, 'City is missing'));
+      if (!state) return next(new CustomError(400, 'State is missing'));
+
+      // if (!email || !password || !firstName || !lastName || !phone || !city || !state || !userType) {
+      //   return next(new CustomError(400, 'All fields are required'));
+      // }
 
       if (!validator.isEmail(email)) {
         return next(new CustomError(400, 'Invalid email format'));
@@ -32,20 +40,28 @@ export default class AuthController {
         return next(new CustomError(400, 'User already exists'));
       }
 
+      let token: string;
       // Create user
-      const user = await User.create(req.body);
+      try {
+        const user = await User.create({
+          email, password, firstName, lastName, phone, city, state, userType, desc, img
+        });
+        // Generate user's sign-in token
+        token = user.getSignedJwtToken();
+      } catch (err) {
+        return next(new CustomError(500, (err as Error).message));
+      }
 
-      // Create token
-      const token = user.getSignedJwtToken();
+      // Send verification email
+      // const verificationLink = `http://localhost:${env.PORT}/auth/verify/${token}`;
+      const verificationLink = `${req.protocol}://${req.get('host')}/auth/verify/${token}`;
 
-      const verificationLink = `http://localhost:${env.PORT}/auth/verify/${token}`;
-
-      await sendMail(email, 'Verify Email', `Click here to verify your email: ${verificationLink}`);
+      await sendMail(email, 'Kajola account email verification', `Click here to verify your email: ${verificationLink}`);
 
       return res.status(201).send('User registered. Please check your email to verify your account.');
   }
 
-  // POST auth/login - Login user
+  // POST /auth/login - Login user
   public static async login(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { email, password } = req.body;
 
@@ -71,17 +87,19 @@ export default class AuthController {
       return res.status(200).json({ token });
   }
   
-  // POST auth/logout - Logout user
+  // POST /auth/logout - Logout user
   public static async logout(req: Request, res: Response): Promise<Response> {
-    res.cookie('token', 'none', {
-      expires: new Date(Date.now() + 10 * 1000),
-      httpOnly: true,
-    });
+    // res.cookie('token', 'none', {
+    //   // expires: new Date(Date.now() + 10 * 1000), // 10 seconds
+    //   expires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+    //   httpOnly: true,
+    // });
+    res.clearCookie('token');
 
     return res.status(200).json({ success: true, data: 'User logged out successfully' });
   }
 
-  // GET auth/verify - Verify a new user email
+  // GET /auth/verify/:token - Verify a new user email
   public static async verifyEmail(req: Request, res: Response): Promise<Response> {
     const { token } = req.params;
 
@@ -107,7 +125,7 @@ export default class AuthController {
       return res.status(200).send('Email verified successfully');
   }
 
-  // POST auth/request-password-reset - Get reset token for password reset
+  // POST /auth/forget-password - Get reset token for password reset
   static async resetToken(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -136,19 +154,8 @@ export default class AuthController {
     }
   }
 
-  // POST auth/password-reset/:resetToken - Reset user password with reset token
+  // PUT /auth/password-reset/:resetToken - Reset user password
   static async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
-    const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
-    if (!user) {
-      return next(new CustomError(400, 'Invalid or expired reset token'));
-    }
-
-    res.status(200).json({ message: 'Reset token successfully validated' });
-  }
-
-  // PUT auth/password-update/ - Update user password
-  static async updatePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
     const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
     if (!user) {
