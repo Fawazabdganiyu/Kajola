@@ -16,10 +16,24 @@ class DBClient implements IDBClient {
 
     try {
       await mongoose.connect(this.connectionString, options);
+      this.clearDatabase();
       console.log('Successfully connected to the database');
     } catch (error) {
       console.error('Error connecting to the database', error);
       process.exit(1); // Exit the process with failure
+    }
+  }
+
+  // For Testing Purposes - Clearing the database
+  public async clearDatabase(): Promise<void> {
+    try {
+      const collections = await mongoose.connection.db.listCollections().toArray();
+      for (const collection of collections) {
+        await mongoose.connection.db.dropCollection(collection.name);
+      }
+      console.log('Database cleared successfully');
+    } catch (error) {
+      console.error('Error clearing database:', error);
     }
   }
 
