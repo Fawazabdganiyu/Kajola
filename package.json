@@ -14,12 +14,15 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/chai": "^4.3.16",
+    "@types/cookie-parser": "^1.4.7",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/mocha": "^10.0.6",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^20.12.12",
+    "@types/nodemailer": "^6.4.15",
     "@types/sinon": "^17.0.3",
+    "@types/validator": "^13.11.10",
     "chai": "^4.4.1",
     "express": "^4.19.2",
     "mocha": "^10.4.0",
@@ -30,8 +33,11 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.4.0"
+    "mongoose": "^8.4.0",
+    "nodemailer": "^6.9.13",
+    "validator": "^13.12.0"
   }
 }

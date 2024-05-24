@@ -1,83 +1,50 @@
-import { compare, hash, genSalt } from 'bcryptjs';
 import { Schema, model } from 'mongoose';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import env from '../config/environment';
 import { IUser } from '../types';
 
 const userSchema = new Schema<IUser>({
-  firstName: {
-    type: String,
-    required: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  phone: {
-    type: String,
-    required: true,
-  },
-  city: {
-    type: String,
-    required: true,
-  },
-  state: {
-    type: String,
-    required: true,
-  },
-  userType: {
-    type: String,
-    enum: ['Buyer', 'Seller'],
-    default: 'Buyer',
-  },
-  wishlist: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Product',
-    },
-  ],
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  phone: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  userType: { type: String, enum: ['Buyer', 'Seller'], default: 'Buyer' },
+  wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+  desc: String,
+  img: String,
   resetToken: String,
   resetTokenExpiry: Date,
   passwordUpdatedAt: Date,
-  desc: String,
-  img: String,
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-    }, {
-    timestamps: true,  // This option will add createdAt and updatedAt fields automatically
+  isVerified: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 // Hash the password before saving the user model
-userSchema.pre('save', async function (next) {
+userSchema.pre<IUser>('save', async function(next) {
   if (!this.isModified('password')) {
     return next();
   }
-  const salt = await genSalt(10);
-  this.password = await hash(this.password, salt);
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
 // Compare the entered password with the password in the database
-userSchema.methods.comparePassword = function (password: string): Promise<boolean> {
-  return compare(password, this.password);
+userSchema.methods.comparePassword = async function(password: string) {
+  return bcrypt.compare(password, this.password);
 };
 
 // Sign JWT and return
-userSchema.methods.getSignedJwtToken = function (): string {
-  return jwt.sign({ id: this._id }, env.JWT_SECRET as string, {
+userSchema.methods.getSignedJwtToken = function() {
+  return jwt.sign({ id: this._id, isVerified: this.isVerified }, env.JWT_SECRET as string, {
     expiresIn: env.JWT_EXPIRATION,
   });
 };
 
-export default model<IUser>('User', userSchema);
+const User = model<IUser>('User', userSchema);
+export default User;
