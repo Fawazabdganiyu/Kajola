@@ -16,7 +16,7 @@ class DBClient implements IDBClient {
 
     try {
       await mongoose.connect(this.connectionString, options);
-      this.clearDatabase();
+      // this.clearDatabase();
       console.log('Successfully connected to the database');
     } catch (error) {
       console.error('Error connecting to the database', error);

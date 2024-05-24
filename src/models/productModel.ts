@@ -1,56 +1,22 @@
 import { Schema, model } from 'mongoose';
+import { IProduct } from '../types';
 
-const productSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  category: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  negotiable: {
-    type: Boolean,
-    default: true,
-  },
-  ratings: [{
-    type: Number,
-    enum: [0, 1, 2, 3, 4, 5],
-  }],
-  averageRating: {
-    type: Number,
-    default: 0,
-  },
-  reviewCount: {
-    type: Number,
-    default: 0,
-  },
-  desc: String,
+const productSchema = new Schema<IProduct>({
+  name: { type: String, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  category: { type: String, required: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+  negotiable: { type: Boolean, default: true },
   images: [String],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
+  ratings: [{ type: Number, enum: [0, 1, 2, 3, 4, 5] }],
+  averageRating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
-productSchema.methods.addReview = function (rating: number) {
+productSchema.methods.addReview = function (rating: number): Promise<IProduct>{
   // Add the new rating to the ratings array
   this.ratings.push(rating);
 
