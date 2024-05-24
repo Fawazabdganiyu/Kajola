@@ -14,12 +14,13 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET as string) as JwtPayload;
-    req.userId = decoded._id;
-    const user = await User.findById(req.userId);
-    
+
+    const user = await User.findById(decoded.id);
     if (!user) {
       return next(new CustomError(401, 'Not authorized, user not found'));
     }
+    req.userId = decoded.id;
+    req.verified = decoded.isVerified;
 
     next();
   } catch (error: any) {

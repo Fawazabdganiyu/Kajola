@@ -9,12 +9,11 @@ const testUserId = new Types.ObjectId();
 
 test('all model attributes', async () => {
   const product = new Product({
+    name: 'Product 1',
     userId: testUserId,
     category: 'Category 1',
-    name: 'Product 1',
     description: 'Description 1',
     price: 100,
-    desc: 'Desc 1',
     images: ['image1.jpg'],
   });
 
@@ -32,7 +31,6 @@ test('all model attributes', async () => {
     ratings: [],
     averageRating: 0,
     reviewCount: 0,
-    desc: 'Desc 1',
     images: ['image1.jpg'],
   });
 });
@@ -52,7 +50,6 @@ test('addReview updates averageRating and reviewCount correctly', async () => {
     negotiable: true,
     averageRating: 5,
     reviewCount: 1,
-    desc: 'Desc 1',
     images: ['image1.jpg'],
   });
 });
@@ -73,7 +70,6 @@ test('addReview updates averageRating and reviewCount correctly for multiple rev
     negotiable: true,
     averageRating: 4,
     reviewCount: 3,
-    desc: 'Desc 1',
     images: ['image1.jpg'],
   });
 });
