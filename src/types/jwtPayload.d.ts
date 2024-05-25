@@ -1,3 +1,4 @@
 export interface JwtPayload {
-    _id: string;
+    id: string;
+    isVerified: boolean;
 }

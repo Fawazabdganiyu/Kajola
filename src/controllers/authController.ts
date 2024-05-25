@@ -81,6 +81,11 @@ export default class AuthController {
         return next(new CustomError(401, 'Invalid credentials'));
       }
 
+      // Check if user is verified
+      if (!user.isVerified) {
+        return next(new CustomError(403, 'Please verify your email to login'));
+      }
+
       const token = user.getSignedJwtToken();
       res.cookie('token', token, { httpOnly: true });
 
@@ -109,7 +114,7 @@ export default class AuthController {
 
       const decoded = jwt.verify(token, env.JWT_SECRET as string) as JwtPayload;
 
-      const user = await User.findById(decoded._id);
+      const user = await User.findById(decoded.id);
 
       if (!user) {
         return res.status(404).send('User not found');
