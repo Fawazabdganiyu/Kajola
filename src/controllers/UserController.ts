@@ -21,10 +21,10 @@ export default class UsersController {
       if (!user) {
         return next(new CustomError(404, 'User not found'));
       }
-      if (req.userId !== user._id.toString()) {
+      if (req.userId?.toString() !== user._id.toString()) {
         return next(new CustomError(403, 'You are not authorized to delete this user'));
       }
       await User.findByIdAndDelete(req.params.id);
-      res.status(204).end();
+      res.status(200).json({ success: true, data: 'User deleted successfully' });
   }
 }
