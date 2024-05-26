@@ -132,7 +132,7 @@ export default class AuthController {
   }
 
   // POST /auth/forget-password - Get reset token for password reset
-  static async resetToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async resetToken(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
@@ -161,7 +161,7 @@ export default class AuthController {
   }
 
   // PUT /auth/password-reset/:resetToken - Reset user password
-  static async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async resetPassword(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
     const user = await User.findOne({ resetToken, resetTokenExpiry: { $gt: Date.now() } });
     if (!user) {

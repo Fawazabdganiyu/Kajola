@@ -48,4 +48,21 @@ export default class ProductController {
       next(new CustomError(500, 'Failed to create product'));
     }
   }
+
+  // DELETE /products/:id - Delete a product
+  static async deleteProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void>{
+    const { id } = req.params;
+    
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new CustomError(404, 'Product not found'));
+    }
+
+    if (req.userId?.toString() !== product.userId.toString()) {
+      return next(new CustomError(403, 'You are not authorized to delete this product'));
+    }
+
+    await Product.findByIdAndDelete(id);
+    return res.status(200).json({ success: true, data: 'Product deleted successfully' });
+  }
 }
