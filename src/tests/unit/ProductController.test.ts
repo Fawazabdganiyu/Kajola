@@ -2,7 +2,7 @@ import { Schema } from 'mongoose';
 import CustomError from '../../utils/customError';
 import Product from '../../models/productModel';
 import ProductController from '../../controllers/ProductController';
-import { dbConnect, dbDisconnect } from '../../utils/mongoMemoryServer';
+import { dbConnect, dbDisconnect } from '../mongoMemoryServer';
 import User from '../../models/userModel';
 
 describe('createProduct', () => {

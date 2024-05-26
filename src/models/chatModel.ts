@@ -1,32 +1,17 @@
 import { Schema, model } from 'mongoose';
+import { IChat } from '../types';
 
 const chatSchema = new Schema({
-  buyerId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  sellerId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
+  participants: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }],
   messages: [
     {
-      sender: {
-        type: String,
-        required: true,
-      },
-      content: {
-        type: String,
-        required: true,
-      },
-      timestamp: {
-        type: Date,
-        default: Date.now,
-      },
-    }
-  ]
+      sender: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      content: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
 });
 
-export default model('Chat', chatSchema);
+const Chat = model<IChat>('Chat', chatSchema);
+
+export default Chat;

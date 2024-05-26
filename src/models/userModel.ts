@@ -13,6 +13,8 @@ const userSchema = new Schema<IUser>({
   city: { type: String, required: true },
   state: { type: String, required: true },
   userType: { type: String, enum: ['Buyer', 'Seller'], default: 'Buyer' },
+  buyerId: {type: String, required: false},
+  sellerId: {type: String, required: false},
   wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
   desc: String,
   img: String,
