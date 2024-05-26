@@ -125,6 +125,7 @@ export default class AuthController {
       }
 
       user.isVerified = true;
+      user.buyerId = user._id as string;
       await user.save();
 
       return res.status(200).send('Email verified successfully');

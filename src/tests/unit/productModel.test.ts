@@ -1,5 +1,5 @@
 import { model, Types } from 'mongoose';
-import { dbConnect, dbDisconnect } from '../../utils/mongoMemoryServer';
+import { dbConnect, dbDisconnect } from '../mongoMemoryServer';
 import Product from '../../models/productModel';
 
 beforeAll(async () => await dbConnect());
