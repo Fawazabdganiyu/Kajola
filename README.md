@@ -42,7 +42,7 @@ Backend and DevOps Engineer
 
 <====Brief self description===>
 
-### Bertal Hamid - <@gmail.com> / [GitHub](https://github.com/) / [LinkedIn]()
+### Bertal Hamid - <hamidbertal8@gmail.com> / [GitHub](https://github.com/) / [LinkedIn]()
 
 #### Role
 
