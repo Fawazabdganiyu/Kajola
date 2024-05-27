@@ -1,5 +1,5 @@
 import { NextFunction } from 'express';
-import { dbConnect, dbDisconnect } from '../../utils/mongoMemoryServer';
+import { dbConnect, dbDisconnect } from '../mongoMemoryServer';
 import CustomError from '../../utils/customError';
 import User from '../../models/userModel';
 import UsersController from '../../controllers/UserController';
