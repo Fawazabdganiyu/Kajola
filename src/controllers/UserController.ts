@@ -43,6 +43,7 @@ export default class UsersController {
     const { password, ...userData } = updatedUser?.toObject();
     res.status(200).json(userData);
   }
+
   // DELETE /user/:id - Delete user by id
   static async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { id } = req.params;
