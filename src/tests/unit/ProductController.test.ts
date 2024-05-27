@@ -1,5 +1,4 @@
 import { Schema, Types } from 'mongoose';
-
 import { dbConnect, dbDisconnect } from '../../utils/mongoMemoryServer';
 import CustomError from '../../utils/customError';
 import Product from '../../models/productModel';
@@ -26,21 +25,21 @@ describe('productController', () => {
       state: 'Lagos',
     });
     userId = user._id;
-
-    req = { userId, verified: true };
-    res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    next = jest.fn();
   });
+
   afterAll(async () => await dbDisconnect());
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    req = { userId, verified: true, body: {} };
+    res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    next = jest.fn();
   });
+
   describe('createProduct', () => {
     describe('input validation', () => {
       // Missing product name results in a 400 error
       it('should return a 400 error when the product name is missing', async () => {
-        req.body = { category: 'Electronics', description: 'High performance', price: 1500, negotiable: true },
+        req.body = { category: 'Electronics', description: 'High performance', price: 1500, negotiable: true };
 
         await ProductController.createProduct(req, res, next);
 
@@ -51,7 +50,7 @@ describe('productController', () => {
 
       // Missing category results in a 400 error
       it('should return a 400 error when the category is missing', async () => {
-        req.body = { name: 'Laptop', description: 'High performance', price: 1500, negotiable: true },
+        req.body = { name: 'Laptop', description: 'High performance', price: 1500, negotiable: true };
 
         await ProductController.createProduct(req, res, next);
 
@@ -62,7 +61,7 @@ describe('productController', () => {
 
       // Missing description results in a 400 error
       it('should return a 400 error when the description is missing', async () => {
-        req.body = { name: 'Laptop', category: 'Electronics', price: 1500, negotiable: true },
+        req.body = { name: 'Laptop', category: 'Electronics', price: 1500, negotiable: true };
 
         await ProductController.createProduct(req, res, next);
 
@@ -73,7 +72,7 @@ describe('productController', () => {
 
       // Missing price results in a 400 error
       it('should return a 400 error when the price is missing', async () => {
-        req.body = { name: 'Laptop', category: 'Electronics', description: 'High performance', negotiable: true },
+        req.body = { name: 'Laptop', category: 'Electronics', description: 'High performance', negotiable: true };
 
         await ProductController.createProduct(req, res, next);
 
@@ -130,7 +129,8 @@ describe('productController', () => {
           category: 'Electronics',
           description: 'High performance',
           price: 1500,
-          userId });
+          userId
+        });
         await ProductController.createProduct(req, res, next);
 
         expect(next).toHaveBeenCalledWith(expect.any(CustomError));
@@ -175,8 +175,8 @@ describe('productController', () => {
 
         await ProductController.createProduct(req, res, next);
 
-        const user = await User.findById(userId);
-        expect(user?.userType).toBe('Seller');
+        const updatedUser = await User.findById(userId);
+        expect(updatedUser?.userType).toBe('Seller');
       });
     });
   });
@@ -192,10 +192,11 @@ describe('productController', () => {
         price: 100,
         userId,
       });
-    });
-    it('should delete a product', async () => {
       req.params = { id: product._id };
+      req.userId = userId;
+    });
 
+    it('should delete a product', async () => {
       await ProductController.deleteProduct(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(200);
@@ -203,7 +204,7 @@ describe('productController', () => {
     });
 
     it('should return a 404 error if the product does not exist', async () => {
-      req.params = { id: new Types.ObjectId() };
+      req.params.id = new Types.ObjectId();
 
       await ProductController.deleteProduct(req, res, next);
 
@@ -213,7 +214,6 @@ describe('productController', () => {
     });
 
     it('should return a 403 error if the user is not authorized to delete the product', async () => {
-      req.params = { id: product._id };
       req.userId = new Types.ObjectId();
 
       await ProductController.deleteProduct(req, res, next);

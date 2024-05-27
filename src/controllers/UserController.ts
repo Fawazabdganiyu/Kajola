@@ -7,12 +7,12 @@ export default class UsersController {
   // GET /user/:id - Get user by id
   static async getUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     const user = await User.findById(req.params.id);
-      if (!user) {
-        return next(new CustomError(404, 'User not found'));
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userData } = user;
-      res.status(200).json({ ...userData });
+    if (!user) {
+      return next(new CustomError(404, 'User not found'));
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userData } = user.toObject();
+    res.status(200).json(userData);
   }
 
   // DELETE /user/:id - Delete user by id

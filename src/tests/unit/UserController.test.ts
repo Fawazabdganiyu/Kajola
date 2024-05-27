@@ -1,61 +1,100 @@
 import { NextFunction } from 'express';
-
+import { dbConnect, dbDisconnect } from '../../utils/mongoMemoryServer';
 import CustomError from '../../utils/customError';
 import User from '../../models/userModel';
 import UsersController from '../../controllers/UserController';
+import { IUser } from '../../types';
+import { Schema, Types } from 'mongoose';
 
-describe('getUser', () => {
-  // User is found and returned without the password field
-  it('should return user data without password when user is found', async () => {
-    const req = { params: { id: '123' } } as any;
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() } as any;
-    const next = jest.fn() as NextFunction;
-    User.findById = jest.fn().mockResolvedValue({ _id: '123', username: 'testUser', password: 'secret' });
+describe('UsersController', () => {
+  let res: any;
+  let next: NextFunction;
 
-    await UsersController.getUser(req, res, next);
+  beforeAll(async () => await dbConnect());
+  afterAll(async () => await dbDisconnect());
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ _id: '123', username: 'testUser' });
-    expect(next).not.toHaveBeenCalled();
+  beforeEach(() => {
+    res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    next = jest.fn();
   });
 
-  // User with the specified ID does not exist
-  it('should call next with a 404 error when no user is found', async () => {
-    const req = { params: { id: 'unknown' } } as any;
-    const res = {} as any;
-    const next = jest.fn() as NextFunction;
-    User.findById = jest.fn().mockResolvedValue(null);
+  describe('getUser', () => {
+    it('should return user data without password when user is found', async () => {
+      const user = await User.create({
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'test182@gmail.com',
+        password: 'password',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      });
+      const req: any = { params: { id: user._id } };
 
-    await UsersController.getUser(req, res, next);
+      await UsersController.getUser(req, res, next);
 
-    expect(next).toHaveBeenCalledWith(new CustomError(404, 'User not found'));
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        _id: user._id,
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'test182@gmail.com',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo', 
+      }));
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should call next with a 404 error when no user is found', async () => {
+      const req: any = { params: { id: new Types.ObjectId() } };
+
+      await UsersController.getUser(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(new CustomError(404, 'User not found'));
+    });
   });
 
-  // Request parameters are missing or null
-  it('should return a 404 error when user is not found', async () => {
-    const req = { params: { id: '23' } } as any;
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() } as any;
-    const next = jest.fn() as NextFunction;
-    User.findById = jest.fn().mockResolvedValue(null);
+  describe('deleteUser', () => {
+    let user: IUser;
+    let req: any;
 
-    await UsersController.getUser(req, res, next);
+    beforeEach(async () => {
+      await User.deleteMany({});
+      user = await User.create({
+        firstName: 'testUser',
+        lastName: 'testUser',
+        email: 'test567@gmail.com',
+        password: 'secret',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      });
+      req = { params: { id: user._id }, userId: user._id };
+    });
 
-    expect(next).toHaveBeenCalledWith(new CustomError(404, 'User not found'));
-    expect(res.status).not.toHaveBeenCalled();
-    expect(res.json).not.toHaveBeenCalled();
-  });
+    it('should return a 200 status and success message when user is deleted', async () => {
+      await UsersController.deleteUser(req, res, next);
 
-  // Check for proper JSON structure in the response
-  it('should return user data without password when user is found', async () => {
-    const req = { params: { id: '123' } } as any;
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() } as any;
-    const next = jest.fn() as NextFunction;
-    User.findById = jest.fn().mockResolvedValue({ _id: '123', username: 'testUser', password: 'secret' });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ success: true, data: 'User deleted successfully' });
+      expect(next).not.toHaveBeenCalled();
+    });
 
-    await UsersController.getUser(req, res, next);
+    it('should call next with a 404 error when no user is found', async () => {
+      req.params.id = new Types.ObjectId();
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ _id: '123', username: 'testUser' });
-    expect(next).not.toHaveBeenCalled();
+      await UsersController.deleteUser(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(new CustomError(404, 'User not found'));
+    });
+
+    it('should call next with a 403 error when user is not authorized to delete user', async () => {
+      req.userId = new Types.ObjectId();
+
+      await UsersController.deleteUser(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(new CustomError(403, 'You are not authorized to delete this user'));
+    });
   });
 });
