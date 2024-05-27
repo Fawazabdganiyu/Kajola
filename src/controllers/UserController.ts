@@ -2,11 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 
 import CustomError from '../utils/customError';
 import User from '../models/userModel';
+import mongoose from 'mongoose';
 
 export default class UsersController {
   // GET /user/:id - Get user by id
   static async getUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const user = await User.findById(req.params.id);
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid user id'));
+    }
+    const user = await User.findById(id);
     if (!user) {
       return next(new CustomError(404, 'User not found'));
     }
@@ -17,7 +22,12 @@ export default class UsersController {
 
   // DELETE /user/:id - Delete user by id
   static async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const user = await User.findById(req.params.id);
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid user id'));
+    }
+
+    const user = await User.findById(id);
       if (!user) {
         return next(new CustomError(404, 'User not found'));
       }
