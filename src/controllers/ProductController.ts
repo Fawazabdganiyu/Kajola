@@ -49,7 +49,30 @@ export default class ProductController {
     }
   }
 
-  // DELETE /products/:id - Delete a product
+  // PUT /api/products/:id - Update a product
+  static async updateProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { id } = req.params;
+    // Ensure only specific fields can be updated
+    const { name, category, description, price, negotiable } = req.body;
+
+    // Check if the product exists
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new CustomError(404, 'Product not found'));
+    }
+
+    // Authenticate the user
+    if (req.userId?.toString() !== product.userId.toString()) {
+      return next(new CustomError(403, 'You are not authorized to update this product'));
+    }
+
+    // Update the product
+    await Product.findByIdAndUpdate(id, { name, category, description, price, negotiable });
+    const updatedProduct: IProduct | null = await Product.findById(id);
+    res.status(200).json(updatedProduct?.toObject());
+  } 
+
+  // DELETE /api/products/:id - Delete a product
   static async deleteProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void>{
     const { id } = req.params;
     

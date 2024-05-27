@@ -1,5 +1,5 @@
 import { Schema, Types } from 'mongoose';
-import { dbConnect, dbDisconnect } from '../../utils/mongoMemoryServer';
+import { dbConnect, dbDisconnect } from '../mongoMemoryServer';
 import CustomError from '../../utils/customError';
 import Product from '../../models/productModel';
 import ProductController from '../../controllers/ProductController';
@@ -179,6 +179,56 @@ describe('productController', () => {
         expect(updatedUser?.userType).toBe('Seller');
       });
     });
+  });
+
+  describe('updateProduct', () => {
+    let product: IProduct;
+    beforeEach(async () => {
+      await Product.deleteMany({});
+      product = await Product.create({
+        name: 'Nail',
+        category: 'Building materials',
+        description: 'High quality',
+        price: 100,
+        userId,
+      });
+      req.params = { id: product._id };
+    });
+
+    it('should update a product', async () => {
+      req.body = { name: 'Screw', category: 'Building materials', description: 'High quality', price: 200 };
+
+      await ProductController.updateProduct(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'Screw',
+        category: 'Building materials',
+        description: 'High quality',
+        price: 200,
+      }));
+    });
+
+    it('should return a 404 error if the product does not exist', async () => {
+      req.params.id = new Types.ObjectId();
+
+      await ProductController.updateProduct(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(404);
+      expect(next.mock.calls[0][0].message).toBe('Product not found');
+    });
+
+    it('should return a 403 error if the user is not authorized to update the product', async () => {
+      req.userId = new Types.ObjectId();
+
+      await ProductController.updateProduct(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(403);
+      expect(next.mock.calls[0][0].message).toBe('You are not authorized to update this product');
+    });
+  
   });
 
   describe('deleteProduct', () => {
