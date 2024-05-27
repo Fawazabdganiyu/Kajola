@@ -52,6 +52,9 @@ export default class ProductController {
   // PUT /api/products/:id - Update a product
   static async updateProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid product id'));
+    }
     // Ensure only specific fields can be updated
     const { name, category, description, price, negotiable } = req.body;
 
@@ -119,9 +122,44 @@ export default class ProductController {
     res.status(200).json({ matchedCount, data });
   }
 
+  // GET /api/products/:id - Get a product by id
+  static async getProductById(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid product id'));
+    }
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new CustomError(404, 'Product not found'));
+    }
+
+    res.status(200).json(product.toObject());
+  }
+
+  // GET /api/products/user/:userId - Get all products by a user
+  static async getProductsByUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid product id'));
+    }
+
+    const products = await Product.find({ userId: id });
+    if (!products) {
+      return next(new CustomError(404, 'Products not found'));
+    }
+
+    const data: IProduct[] = products.map(product => product.toObject());
+
+    res.status(200).json({ count: data.length, data });
+  }
+
   // DELETE /api/products/:id - Delete a product
   static async deleteProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void>{
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid product id'));
+    }
     
     const product = await Product.findById(id);
     if (!product) {

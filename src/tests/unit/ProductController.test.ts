@@ -336,6 +336,96 @@ describe('productController', () => {
 
   });
 
+  describe('getProductById', () => {
+    let product: IProduct;
+    beforeEach(async () => {
+      await Product.deleteMany({});
+      product = await Product.create({
+        name: 'Nail',
+        category: 'Building materials',
+        description: 'High quality',
+        price: 100,
+        userId,
+      });
+      req.params = { id: product._id };
+    });
+
+    it('should return a product by id', async () => {
+      await ProductController.getProductById(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'Nail',
+        category: 'Building materials',
+        description: 'High quality',
+        price: 100,
+      }));
+    });
+
+    it('should return a 400 error if the id is invalid', async () => {
+      req.params.id = 'invalidId';
+
+      await ProductController.getProductById(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(400);
+      expect(next.mock.calls[0][0].message).toBe('Invalid product id');
+    });
+
+    it('should return a 404 error if the product does not exist', async () => {
+      req.params.id = new Types.ObjectId();
+
+      await ProductController.getProductById(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(404);
+      expect(next.mock.calls[0][0].message).toBe('Product not found');
+    });
+  });
+
+  describe('getProductsByUser', () => {
+    let products: Array<Object>;
+    beforeEach(async () => {
+      await Product.deleteMany({});
+      await User.findOneAndDelete({ email: 'www@gmail.com' });
+    });
+
+    it('should return products by a user', async () => {
+      const newUser = await User.create({
+        firstName: 'Jane',
+        lastName: 'Doe',
+        email: 'www@gmail.com',
+        password: 'password',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      });
+      products = [
+        {
+          name: 'Drill',
+          category: 'Electronics',
+          description: 'High quality',
+          price: 100,
+          userId: newUser._id,
+        },
+        {
+          name: 'Screw',
+          category: 'Building materials',
+          description: 'High quality',
+          price: 200,
+          userId: newUser._id,
+        },
+      ];
+      await Product.insertMany(products);
+
+      req.params = { id: newUser._id };
+      await ProductController.getProductsByUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ count: 2, data: expect.any(Array) }));
+    });
+  });
+
   describe('deleteProduct', () => {
     let product: IProduct;
     beforeEach(async () => {
@@ -376,6 +466,16 @@ describe('productController', () => {
       expect(next).toHaveBeenCalledWith(expect.any(CustomError));
       expect(next.mock.calls[0][0].status).toBe(403);
       expect(next.mock.calls[0][0].message).toBe('You are not authorized to delete this product');
+    });
+
+    it('should return a 400 error if the id is invalid', async () => {
+      req.params.id = 'invalidId';
+
+      await ProductController.deleteProduct(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(400);
+      expect(next.mock.calls[0][0].message).toBe('Invalid product id');
     });
   });
 });
