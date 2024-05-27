@@ -10,6 +10,8 @@ export interface IUser extends Document {
   city: string;
   state: string;
   userType: 'Buyer' | 'Seller';
+  buyerId: string,
+  sellerId: string,
   wishlist: string[];
   resetToken?: string;
   resetTokenExpiry?: Date;
