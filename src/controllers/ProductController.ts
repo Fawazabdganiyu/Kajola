@@ -70,7 +70,54 @@ export default class ProductController {
     await Product.findByIdAndUpdate(id, { name, category, description, price, negotiable });
     const updatedProduct: IProduct | null = await Product.findById(id);
     res.status(200).json(updatedProduct?.toObject());
-  } 
+  }
+
+  // GET /api/products - Get all products by query if any
+  static async getProducts(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { name, category, minPrice, maxPrice, page = 1, userLocation } = req.query;
+    
+    // Build the query
+    const query: any = {};
+
+    if (name) query.name = { $regex: name, $options: 'i' };
+    if (category) query.category = { $regex: category, $options: 'i' };
+    if (minPrice && maxPrice) {
+      query.price = { $gte: minPrice, $lte: maxPrice };
+    } else if (minPrice) {
+      query.price = { $gte: minPrice };
+    } else if (maxPrice) {
+      query.price = { $lte: maxPrice };
+    }
+
+    if (userLocation === 'true') {
+      // Add user city and state to the query
+      if (req.userId) {
+        const user = await User.findById(req.userId).select('city state');
+        query['user.city'] = user?.city;
+        query['user.state'] = user?.state;
+      }
+    }
+
+    const products = await Product.aggregate([
+      { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+      { $unwind: '$user' },
+      { $match: query },
+      { $sort: { averageRating: -1 } },
+      { $skip: (Number(page) - 1) * 10 },
+      { $limit: 10 }
+    ]);
+    const matchedCount = products.length;
+
+    const data = products.map(function (product) {
+      if (product.user) {
+        const { _id, firstName, lastName, desc, img, userType, city, state, phone } = product.user;
+        product.user = { _id, firstName, lastName, desc, img, userType, city, state, phone };
+      }
+      return product;
+    });
+
+    res.status(200).json({ matchedCount, data });
+  }
 
   // DELETE /api/products/:id - Delete a product
   static async deleteProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void>{

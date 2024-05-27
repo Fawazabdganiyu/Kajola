@@ -5,6 +5,7 @@ import Product from '../../models/productModel';
 import ProductController from '../../controllers/ProductController';
 import User from '../../models/userModel';
 import { IProduct, IUser } from '../../types';
+import exp from 'constants';
 
 describe('productController', () => {
   let req: any;
@@ -229,6 +230,110 @@ describe('productController', () => {
       expect(next.mock.calls[0][0].message).toBe('You are not authorized to update this product');
     });
   
+  });
+
+  describe('getProducts', () => {
+    let products: Array<Object>;
+    beforeEach(async () => {
+      await Product.deleteMany({});
+      await User.findOneAndDelete({ email: 'tttt@yahoo.com' });
+      const newUser = await User.create({
+        firstName: 'Jane',
+        lastName: 'Doe',
+        email: 'tttt@yahoo.com',
+        password: 'password',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      });
+      products = [
+        {
+          name: 'Drill',
+          category: 'Electronics',
+          description: 'High quality',
+          price: 100,
+          userId,
+        },
+        {
+          name: 'Screw',
+          category: 'Building materials',
+          description: 'High quality',
+          price: 200,
+          userId: newUser._id,
+        },
+      ];
+      await Product.insertMany(products);
+      req.query = {};
+    });
+
+    it('should return all products when no query and no authentication', async () => {
+      req.query = {};
+      req.userId = null;
+
+      await ProductController.getProducts(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ matchedCount: 2, data: expect.any(Array) }),
+      );
+    });
+
+    it('should return products based on authenticated user in the same location with no query', async () => {
+      req.query = { userLocation: 'true' };
+
+      await ProductController.getProducts(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ matchedCount: 1, data: expect.arrayContaining([expect.any(Object)]) }),
+      );
+    });
+
+    it('should return products based on authenticated user in different location with query', async () => {
+      req.query = { userLocation: 'true', category: 'Building materials' };
+
+      await ProductController.getProducts(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ matchedCount: 0, data: [] }),
+      );
+    });
+
+    it('should return products based on name query', async () => {
+      req.query = { name: 'Screw' };
+
+      await ProductController.getProducts(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ matchedCount: 1, data: expect.any(Array) }),
+      );
+    });
+
+    it('should return products based on price range query', async () => {
+      req.query = { minPrice: 100, maxPrice: 200 };
+
+      await ProductController.getProducts(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ matchedCount: 2, data: expect.any(Array) }),
+      );
+    });
+
+    it('should return products based on user location query but unauthenticated', async () => {
+      req.query = { userLocation: 'true' };
+      req.userId = null;
+
+      await ProductController.getProducts(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ matchedCount: 2, data: expect.any(Array) }),
+      );
+    });
+
   });
 
   describe('deleteProduct', () => {
