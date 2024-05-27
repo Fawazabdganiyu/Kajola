@@ -199,4 +199,28 @@ export default class ProductController {
 
     res.status(200).json({ success: true, message: 'Product successfully added to wishlist' });
   }
+
+  // DELETE /api/products/:id/wishlist - Remove product from wishlist
+  static async removeFromWishlist(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid product id'));
+    }
+
+    const product: IProduct | null = await Product.findById(id);
+    if (!product) {
+      return next(new CustomError(404, 'Product not found'));
+    }
+
+    if (!req.userId) {
+      return next(new CustomError(403, 'Please login to remove product from wishlist'));
+    }
+
+    const user: IUser | null = await User.findById(req.userId);
+    if (!user?.wishlist.includes(id)) {
+      return next(new CustomError(400, 'Product not in wishlist'));
+    }
+
+    user.wishlist = user.wishlist.filter((productId: string) => productId !== id);
+  }
 }
