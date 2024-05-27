@@ -5,7 +5,6 @@ declare global {
     interface Request {
       userId?: string;
       verified?: boolean;
-      user?: IUser;
     }
   }
 }
