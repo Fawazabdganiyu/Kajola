@@ -9,6 +9,8 @@ router.post('/', authMiddleware, ProductController.createProduct);
 router.get('/', authMiddleware, ProductController.getProducts);
 router.put('/:id', authMiddleware, ProductController.updateProduct);
 router.delete('/:id', authMiddleware, ProductController.deleteProduct);
+router.post('/:id/wishlist', authMiddleware, ProductController.addToWishlist);
+router.delete('/:id/wishlist', authMiddleware, ProductController.removeFromWishlist);
 router.get('/:id', ProductController.getProductById);
 router.get('/user/:id', ProductController.getProductsByUser);
 
