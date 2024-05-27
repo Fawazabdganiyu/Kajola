@@ -9,7 +9,7 @@ import { IProduct } from '../types';
 export default class ProductController {
   // POST /products - Create a new product
   static async createProduct(req: Request, res: Response, next: NextFunction) {
-    const { name, category, description, price, negotiable } = req.body;
+    const { name, category, description, price, negotiable = true } = req.body;
 
     // Check active user
     if (!req.userId) {
@@ -63,6 +63,6 @@ export default class ProductController {
     }
 
     await Product.findByIdAndDelete(id);
-    return res.status(200).json({ success: true, data: 'Product deleted successfully' });
+    res.status(200).json({ success: true, data: 'Product deleted successfully' });
   }
 }
