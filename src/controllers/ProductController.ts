@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import CustomError from '../utils/customError';
 import Product from '../models/productModel';
 import User from '../models/userModel';
-import { IProduct } from '../types';
+import { IProduct, IUser } from '../types';
 
 export default class ProductController {
   // POST /products - Create a new product
@@ -172,5 +172,31 @@ export default class ProductController {
 
     await Product.findByIdAndDelete(id);
     res.status(200).json({ success: true, data: 'Product deleted successfully' });
+  }
+
+  // POST /api/products/:id/wishlist - Add product to wishlist
+  static async addToWishlist(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid product id'));
+    }
+
+    const product: IProduct | null = await Product.findById(id);
+    if (!product) {
+      return next(new CustomError(404, 'Product not found'));
+    }
+
+    if (req.userId) {
+      const user: IUser | null = await User.findById(req.userId);
+      if (user?.wishlist.includes(id)) {
+        return next(new CustomError(400, 'Product already in wishlist'));
+      }
+      user?.wishlist.push(id);
+      await user?.save();
+    } else {
+      return next(new CustomError(403, 'Please login to add product to wishlist'));
+    }
+
+    res.status(200).json({ success: true, message: 'Product successfully added to wishlist' });
   }
 }

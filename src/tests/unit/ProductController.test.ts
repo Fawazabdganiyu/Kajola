@@ -478,4 +478,69 @@ describe('productController', () => {
       expect(next.mock.calls[0][0].message).toBe('Invalid product id');
     });
   });
+
+  describe('addToWishlist', () => {
+    let product: IProduct;
+    beforeEach(async () => {
+      await Product.deleteMany({});
+      product = await Product.create({
+        name: 'Nail',
+        category: 'Building materials',
+        description: 'High quality',
+        price: 100,
+        userId,
+      });
+      req.params = { id: product._id };
+      req.userId = userId;
+    });
+
+    it('should add a product to the user wishlist', async () => {
+      await ProductController.addToWishlist(req, res, next);
+
+      const updatedUser = await User.findById(userId);
+      expect(updatedUser?.wishlist).toContainEqual(product._id);
+    });
+
+    it('should return a 404 error if the product does not exist', async () => {
+      req.params.id = new Types.ObjectId();
+
+      await ProductController.addToWishlist(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(404);
+      expect(next.mock.calls[0][0].message).toBe('Product not found');
+    });
+
+    it('should return a 400 error if the id is invalid', async () => {
+      req.params.id = 'invalidId';
+
+      await ProductController.addToWishlist(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(400);
+      expect(next.mock.calls[0][0].message).toBe('Invalid product id');
+    });
+
+    it('should return a 403 error if the user is not authenticated', async () => {
+      req.userId = null;
+
+      await ProductController.addToWishlist(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(403);
+      expect(next.mock.calls[0][0].message).toBe('Please login to add product to wishlist');
+    });
+
+    it('should return a 403 error if the product is already in the wishlist', async () => {
+      await User.findByIdAndUpdate(userId, { $push: { wishlist: product._id } });
+
+      await ProductController.addToWishlist(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(400);
+      expect(next.mock.calls[0][0].message).toBe('Product already in wishlist');
+    });
+
+
+  });
 });
