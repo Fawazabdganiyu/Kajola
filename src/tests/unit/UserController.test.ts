@@ -1,4 +1,4 @@
-import { NextFunction } from 'express';
+import e, { NextFunction } from 'express';
 import { dbConnect, dbDisconnect } from '../mongoMemoryServer';
 import CustomError from '../../utils/customError';
 import User from '../../models/userModel';
@@ -53,6 +53,119 @@ describe('UsersController', () => {
 
       expect(next).toHaveBeenCalledWith(new CustomError(404, 'User not found'));
     });
+  });
+
+  describe('updateUser', () => {
+    let user: IUser;
+    let req: any;
+
+    beforeEach(async () => {
+      await User.deleteMany({});
+      user = await User.create({
+        firstName: 'testUser',
+        lastName: 'testUser',
+        email: 'aaaa@gmail.com',
+        password: 'secret',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      });
+      req = { params: { id: user._id }, userId: user._id, body: {} };
+    });
+
+    it('should return updated user data without password when user is updated', async () => {
+      req.body = { city: 'Ibadan' };
+
+      await UsersController.updateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        _id: user._id,
+        firstName: 'testUser',
+        lastName: 'testUser',
+        email: 'aaaa@gmail.com',
+        phone: '1234567890',
+        city: 'Ibadan',
+        state: 'Oyo',
+      }));
+      expect(res.json).not.toHaveBeenCalledWith(expect.objectContaining({ password: expect.any(String) }));
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should call next with a 404 error when no user is found', async () => {
+      req.params.id = new Types.ObjectId();
+
+      await UsersController.updateUser(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(new CustomError(404, 'User not found'));
+    });
+
+    it('should call next with a 403 error when user is not authorized to update user', async () => {
+      req.userId = new Types.ObjectId();
+
+      await UsersController.updateUser(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(new CustomError(403, 'You are not authorized to update this user'));
+    });
+
+    it('should call next with a 400 error when an invalid user id is provided', async () => {
+      req.params.id = 'invalidId';
+
+      await UsersController.updateUser(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(new CustomError(400, 'Invalid user id'));
+    });
+
+    it('should not update user data when no update fields are provided', async () => {
+      await UsersController.updateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        _id: user._id,
+        firstName: 'testUser',
+        lastName: 'testUser',
+        email: 'aaaa@gmail.com',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      }));
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should not update user data when an invalid update field is provided', async () => {
+      req.body = { invalidField: 'invalidValue' };
+
+      await UsersController.updateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        _id: user._id,
+        firstName: 'testUser',
+        lastName: 'testUser',
+        email: 'aaaa@gmail.com',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      }));
+    });
+
+    it('should not update user data when firstName is provided', async () => {
+      req.body = { firstName: 'newName' };
+
+      await UsersController.updateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        _id: user._id,
+        firstName: 'testUser',
+        lastName: 'testUser',
+        email: 'aaaa@gmail.com',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      }));
+    });
+
   });
 
   describe('deleteUser', () => {
