@@ -58,7 +58,8 @@ export default class UsersController {
     if (req.userId?.toString() !== user._id.toString()) {
       return next(new CustomError(403, 'You are not authorized to delete this user'));
     }
-    await User.findByIdAndDelete(id);
+
+    await user.deleteOne();
     res.status(200).json({ success: true, data: 'User deleted successfully' });
   }
 }
