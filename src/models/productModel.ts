@@ -6,7 +6,7 @@ const productSchema = new Schema<IProduct>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   category: { type: String, required: true },
   description: { type: String, required: true },
-  price: { type: Number, required: true },
+  price: { type: String, required: true },
   negotiable: { type: Boolean, default: true },
   images: [String],
   ratings: [{ type: Number, enum: [0, 1, 2, 3, 4, 5] }],

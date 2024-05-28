@@ -2,7 +2,7 @@ import { Schema, Types } from 'mongoose';
 import { dbConnect, dbDisconnect } from '../mongoMemoryServer';
 import CustomError from '../../utils/customError';
 import Product from '../../models/productModel';
-import ProductController from '../../controllers/ProductController';
+import ProductController from '../../controllers/productController';
 import User from '../../models/userModel';
 import { IProduct, IUser } from '../../types';
 import exp from 'constants';

@@ -5,26 +5,28 @@ import jwt from 'jsonwebtoken';
 import env from '../config/environment';
 import CustomError from '../utils/customError'
 import { UserPayload } from '../types';
+import cookie from 'cookie';
+
 
 const chatSocket = (io: Server) => {
-  io.use(async (socket: Socket, next) => {
+  io.use(async (socket: Socket) => {
     try {
-      const token = socket.handshake.auth.token;
+      const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+      const token = cookies.token;
       if (!token) {
-        return next(new CustomError(401, 'Authentication error: Token not provided'));
+        return socket.emit('Authentication error: Token not provided');
       }
 
       const decoded = jwt.verify(token, env.JWT_SECRET as string) as UserPayload;
       const user = await User.findById(decoded.id);
       if (!user) {
-        return next(new CustomError(401, 'Authentication error: User not found'));
+        return socket.emit('Authentication error: User not found');
       }
 
       socket.data.user = user;
-      next();
     } catch (error) {
       console.error(401, 'Authentication error:', error);
-      next(new CustomError(401, 'Authentication error'));
+      socket.emit('Authentication error');
     }
   });
 
