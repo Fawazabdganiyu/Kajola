@@ -8,14 +8,12 @@ export default class ChatController {
   public static async createChat(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { buyerId, sellerId } = req.body;
 
-    if (buyerId === sellerId) return next(new CustomError(401, 'Unauthorized Action'))
+    if (buyerId === sellerId) return next(new CustomError(401, 'Unauthorized action'))
 
     const buyer = await User.findById(buyerId);
     const seller = await User.findById(sellerId);
 
-    if (!buyer || !seller) {
-      return next(new CustomError(404, 'Buyer or Seller not found'));
-    }
+    if (!buyer || !seller) return next(new CustomError(401, 'Unauthorized action'));
 
     const chat = new Chat({
       participants: [buyerId, sellerId],
