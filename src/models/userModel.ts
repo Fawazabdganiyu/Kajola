@@ -39,7 +39,7 @@ userSchema.pre<IUser>('save', async function(next) {
 });
 
 // Delete user's products with product's reviews when user is deleted
-userSchema.pre<IUser>(/^findByIdAndDelete/, async function(next) {
+userSchema.pre<IUser>('deleteOne', { document: true, query: false }, async function(next) {
   try {
     if (this.userType === 'Seller') {
       // Get all products by the user

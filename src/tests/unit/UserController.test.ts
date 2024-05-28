@@ -1,6 +1,8 @@
 import e, { NextFunction } from 'express';
 import { dbConnect, dbDisconnect } from '../mongoMemoryServer';
 import CustomError from '../../utils/customError';
+import Product from '../../models/productModel';
+import Review from '../../models/reviewModel';
 import User from '../../models/userModel';
 import UsersController from '../../controllers/UserController';
 import { IUser } from '../../types';
@@ -208,6 +210,39 @@ describe('UsersController', () => {
       await UsersController.deleteUser(req, res, next);
 
       expect(next).toHaveBeenCalledWith(new CustomError(403, 'You are not authorized to delete this user'));
+    });
+
+    test('cascade delete user products and reviews when user is deleted', async () => {
+      user.userType = 'Seller';
+      await user.save();
+
+      const product = await Product.create({
+        name: 'product1',
+        price: 100,
+        category: 'electronics',
+        description: 'product description',
+        userId: user._id,
+      });
+      await Review.create({
+        productId: product._id,
+        userId: user._id,
+        rating: 5,
+        comment: 'Good product',
+      });
+
+      await UsersController.deleteUser(req, res, next);
+
+      const deletedUser = await User.findById(user._id);
+      const deletedProduct = await Product.findById(product._id);
+      const deletedReview = await Review.findOne({ productId: product._id });
+
+      expect(deletedUser).toBeNull();
+      expect(deletedProduct).toBeNull();
+      expect(deletedReview).toBeNull();
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ success: true, data: 'User deleted successfully' });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });
