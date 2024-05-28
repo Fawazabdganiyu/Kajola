@@ -96,14 +96,14 @@ export default class ProductController {
       // Add user city and state to the query
       if (req.userId) {
         const user = await User.findById(req.userId).select('city state');
-        query['user.city'] = user?.city;
-        query['user.state'] = user?.state;
+        query['seller.city'] = user?.city;
+        query['seller.state'] = user?.state;
       }
     }
 
-    const products = await Product.aggregate([
-      { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
-      { $unwind: '$user' },
+    const products: IProduct[] = await Product.aggregate([
+      { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'seller' } },
+      { $unwind: '$seller' },
       { $match: query },
       { $sort: { averageRating: -1 } },
       { $skip: (Number(page) - 1) * 10 },
@@ -112,9 +112,9 @@ export default class ProductController {
     const matchedCount = products.length;
 
     const data = products.map(function (product) {
-      if (product.user) {
-        const { _id, firstName, lastName, desc, img, userType, city, state, phone } = product.user;
-        product.user = { _id, firstName, lastName, desc, img, userType, city, state, phone };
+      if (product.seller) {
+        const { _id, firstName, lastName, desc, img, userType, city, state, phone } = product.seller;
+        product.seller = { _id, firstName, lastName, desc, img, userType, city, state, phone };
       }
       return product;
     });
@@ -222,5 +222,30 @@ export default class ProductController {
     }
 
     user.wishlist = user.wishlist.filter((productId: string) => productId !== id);
+  }
+
+  // GET /api/products/wishlist - Get user's wishlist
+  static async getWishlist(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    if (!req.userId) {
+      return next(new CustomError(403, 'Please login to view wishlist'));
+    }
+
+    const user: IUser | null = await User.findById(req.userId).select('wishlist');
+    if (!user) {
+      return next(new CustomError(404, 'User not found'));
+    }
+
+    const products = await Product.find({ _id: { $in: user.wishlist } })
+      .populate('userId', 'firstName lastName desc img city state phone');
+ 
+    // Change userId field to seller
+    const wishlists = products.map((product) => {
+      const productObj = product.toObject();
+      productObj.seller = productObj.userId;
+      delete productObj.userId;
+      return productObj;
+    });
+
+    res.status(200).json({ count: wishlists.length, wishlists });
   }
 }
