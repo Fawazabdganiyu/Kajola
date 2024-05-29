@@ -15,4 +15,5 @@ export interface IProduct extends Document {
   createdAt: Date;
   updatedAt: Date;
   addReview(rating: number): Promise<IProduct>;
+  seller?: IUser;
 }

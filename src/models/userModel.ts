@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import env from '../config/environment';
 import { IUser } from '../types';
+import Product from './productModel';
+import Review from './reviewModel';
 
 const userSchema = new Schema<IUser>({
   firstName: { type: String, required: true },
@@ -34,6 +36,25 @@ userSchema.pre<IUser>('save', async function(next) {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
+});
+
+// Delete user's products with product's reviews when user is deleted
+userSchema.pre<IUser>('deleteOne', { document: true, query: false }, async function(next) {
+  try {
+    if (this.userType === 'Seller') {
+      // Get all products by the user
+      const products = await Product.find({ userId: this._id });
+      if (products) {
+        // Delete all reviews of the products
+        await Review.deleteMany({ productId: { $in: products.map(product => product._id) } });
+        // Delete all products by the user
+        await Product.deleteMany({ userId: this._id });
+      }
+      next();
+    }
+  } catch (error: any) {
+    next(error);
+  }
 });
 
 // Compare the entered password with the password in the database
