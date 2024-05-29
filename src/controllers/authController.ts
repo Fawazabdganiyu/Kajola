@@ -53,10 +53,10 @@ export default class AuthController {
       }
 
       // Send verification email
-      // const verificationLink = `http://localhost:${env.PORT}/auth/verify/${token}`;
-      const verificationLink = `${req.protocol}://${req.get('host')}/auth/verify/${token}`;
-
-      await sendMail(email, 'Kajola account email verification', `Click here to verify your email: ${verificationLink}`);
+      // const verificationLink = `http://localhost:${env.PORT}/api/auth/verify/${token}`;
+      const verificationLink = `${req.protocol}://${req.get('host')}/api/auth/verify/${token}`;
+      const mail = `<div style="margin: 45px 25px"><b>Welcome ${firstName} ${lastName}!</b><p>Thank you for signing up for Kajola</p><p>Click the link below to verify your email:</p><br><a href=${verificationLink}><button style="background-color: #4CAF50; border: none; border-radius: 5px; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 18px; cursor: pointer;">Confirm my account</button></a><br><p>You can only enjoy our service better by verifying your account</p><br><p>Thank you</p><p>Kajola Team</p></div>`;
+      await sendMail(email, 'Kajola account confirmation', mail);
 
       return res.status(201).send('User registered. Please check your email to verify your account.');
   }
@@ -147,7 +147,7 @@ export default class AuthController {
     await User.findByIdAndUpdate(user._id, { resetToken, resetTokenExpiry });
 
     // Send password reset url to user's email
-    const resetUrl = `${req.protocol}://${req.get('host')}/password-reset/${token}`;
+    const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/password-reset/${token}`;
     const message = `You just requested a password reset. Click the link below to reset your password:\n\n${resetUrl}\n\nIf you didn't initiate this process, please ignore this email.`;
 
     // Send email with nodemailer
