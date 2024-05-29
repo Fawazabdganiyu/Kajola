@@ -101,7 +101,7 @@ export default class AuthController {
     // });
     res.clearCookie('token');
 
-    return res.status(200).json({ success: true, data: 'User logged out successfully' });
+    return res.status(200).json({ success: true, message: 'User logged out successfully' });
   }
 
   // GET /auth/verify/:token - Verify a new user email
