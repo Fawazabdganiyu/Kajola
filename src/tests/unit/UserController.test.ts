@@ -4,7 +4,7 @@ import CustomError from '../../utils/customError';
 import Product from '../../models/productModel';
 import Review from '../../models/reviewModel';
 import User from '../../models/userModel';
-import UsersController from '../../controllers/UserController';
+import UsersController from '../../controllers/userController';
 import { IUser } from '../../types';
 import { Schema, Types } from 'mongoose';
 import exp from 'constants';
