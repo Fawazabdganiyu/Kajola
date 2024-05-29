@@ -57,6 +57,9 @@ export default class ProductController {
     }
     // Ensure only specific fields can be updated
     const { name, category, description, price, negotiable } = req.body;
+    if (!name && !category && !description && !price && !negotiable) {
+      return next(new CustomError(400, 'Only name, category, description, price and negotiable fields are allowed to be updated'));
+    }
 
     // Check if the product exists
     const product = await Product.findById(id);

@@ -45,6 +45,10 @@ export default class UsersController {
       return next(new CustomError(400, 'Invalid user id'));
     }
 
+    if (!city && !state && !phone && !desc) {
+      return next(new CustomError(400, 'Only city, state, phone and desc fields are allowed to be updated'));
+    }
+
     const user = await User.findById(id);
     if (!user) {
       return next(new CustomError(404, 'User not found'));
