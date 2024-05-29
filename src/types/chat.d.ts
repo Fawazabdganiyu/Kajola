@@ -10,4 +10,6 @@ interface UserPayload {
   id: string;
   iat: number;
   exp: number;
+  buyerId: string;
+  sellerId: string;
 }

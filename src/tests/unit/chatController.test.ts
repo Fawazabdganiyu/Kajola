@@ -62,7 +62,7 @@ describe('ChatController', () => {
     });
   });
 
-  it('should return a 404 error if buyer or seller not found', async () => {
+  it('should return a 401 error if buyer or seller not found', async () => {
     const nonExistentId = new mongoose.Types.ObjectId();
 
     req.body = { buyerId: nonExistentId, sellerId };
@@ -70,8 +70,8 @@ describe('ChatController', () => {
     await ChatController.createChat(req, res, next);
 
     expect(next).toHaveBeenCalledWith(expect.any(CustomError));
-    expect(next.mock.calls[0][0].status).toBe(404);
-    expect(next.mock.calls[0][0].message).toBe('Buyer or Seller not found');
+    expect(next.mock.calls[0][0].status).toBe(401);
+    expect(next.mock.calls[0][0].message).toBe('Unauthorized action');
   });
 
   describe('getUserChats', () => {
