@@ -7,10 +7,11 @@ import User from '../../models/userModel';
 import UsersController from '../../controllers/UserController';
 import { IUser } from '../../types';
 import { Schema, Types } from 'mongoose';
+import exp from 'constants';
 
 describe('UsersController', () => {
   let res: any;
-  let next: NextFunction;
+  let next: any;
 
   beforeAll(async () => await dbConnect());
   afterAll(async () => await dbDisconnect());
@@ -18,6 +19,53 @@ describe('UsersController', () => {
   beforeEach(() => {
     res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
     next = jest.fn();
+  });
+
+  describe('getMe', () => {
+    test('found current user', async () => {
+      const user = await User.create({
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'tested@gmail.com',
+        password: 'password',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      });
+      const req: any = { userId: user._id };
+
+      await UsersController.getMe(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        _id: user._id,
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'tested@gmail.com',
+        phone: '1234567890',
+        city: 'Saki',
+        state: 'Oyo',
+      }));
+      expect(next).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalledWith(expect.objectContaining({ password: expect.any(String) }));
+    });
+
+    test('not found current user', async () => {
+      const req: any = { userId: new Types.ObjectId() };
+
+      await UsersController.getMe(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized, user not found'));
+    });
+
+    test('invalid user', async () => {
+      const req: any = { userId: "invalid" };
+
+      await UsersController.getMe(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(CustomError));
+      expect(next.mock.calls[0][0].status).toBe(500);
+    });
   });
 
   describe('getUser', () => {
