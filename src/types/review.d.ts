@@ -1,10 +1,12 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface IReview implements Document {
-  userId: string;
-  productId: string;
+  _id: Types.ObjectId;
+  userId: Types.ObjectId;
+  productId: Types.ObjectId;
   rating: number;
   comment: string;
   createdAt: Date;
   updatedAt: Date;
+  editHistory: { rating: number, comment: string, editedAt: Date }[];
 }
