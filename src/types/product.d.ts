@@ -6,7 +6,7 @@ export interface IProduct extends Document {
   userId: Schema.Types.ObjectId;
   category: string;
   description: string;
-  price: number;
+  price: string;
   negotiable: boolean;
   images: string[];
   ratings: number[];
