@@ -1,12 +1,12 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface IProduct extends Document {
-  _id: Schema.Types.ObjectId;
+  _id: Types.ObjectId;
   name: string;
-  userId: Schema.Types.ObjectId;
+  userId: Types.ObjectId;
   category: string;
   description: string;
-  price: number;
+  price: string;
   negotiable: boolean;
   images: string[];
   ratings: number[];
@@ -15,5 +15,6 @@ export interface IProduct extends Document {
   createdAt: Date;
   updatedAt: Date;
   addReview(rating: number): Promise<IProduct>;
+  removeReview(rating: number): Promise<IProduct>;
   seller?: IUser;
 }

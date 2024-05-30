@@ -1,7 +1,7 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface IChat extends Document {
-  participants: string[];
+  participants: Types.ObjectId[];
   messages: IMessage[];
   createdAt: Date;
 }

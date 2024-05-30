@@ -1,7 +1,7 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface IUser extends Document {
-  _id: Schema.Types.ObjectId;
+  _id: Types.ObjectId;
   firstName: string;
   lastName: string;
   email: string;
@@ -10,8 +10,8 @@ export interface IUser extends Document {
   city: string;
   state: string;
   userType: 'Buyer' | 'Seller';
-  buyerId: string,
-  sellerId: string,
+  buyerId: Types.ObjectId,
+  sellerId: Types.ObjectId,
   wishlist: string[];
   resetToken?: string;
   resetTokenExpiry?: Date;
