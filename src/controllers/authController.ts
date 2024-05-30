@@ -91,7 +91,7 @@ export default class AuthController {
 
       return res.status(200).json({ token });
   }
-  
+
   // POST /auth/logout - Logout user
   public static async logout(req: Request, res: Response): Promise<Response> {
     // res.cookie('token', 'none', {
@@ -125,7 +125,6 @@ export default class AuthController {
       }
 
       user.isVerified = true;
-      user.buyerId = user._id;
       await user.save();
 
       return res.status(200).send('Email verified successfully');
