@@ -4,7 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import CustomError from '../utils/customError';
 import Product from '../models/productModel';
 import User from '../models/userModel';
-import { IProduct, IUser } from '../types';
+import Review from '../models/reviewModel'
+import { IProduct, IUser, IReview } from '../types';
 
 export default class ProductController {
   // POST /products - Create a new product
@@ -20,7 +21,7 @@ export default class ProductController {
     if (!req.verified) {
       return next(new CustomError(403, 'Please verify your email to display your product/services'));
     }
-  
+
     // Validate input
     if (!name) return next(new CustomError(400, 'Product name is missing'));
     if (!category) return next(new CustomError(400, 'Category is missing'));
@@ -81,7 +82,7 @@ export default class ProductController {
   // GET /api/products - Get all products by query if any
   static async getProducts(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { name, category, minPrice, maxPrice, page = 1, userLocation } = req.query;
-    
+
     // Build the query
     const query: any = {};
 
@@ -163,7 +164,7 @@ export default class ProductController {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new CustomError(400, 'Invalid product id'));
     }
-    
+
     const product = await Product.findById(id);
     if (!product) {
       return next(new CustomError(404, 'Product not found'));
@@ -240,15 +241,27 @@ export default class ProductController {
 
     const products = await Product.find({ _id: { $in: user.wishlist } })
       .populate('userId', 'firstName lastName desc img city state phone');
- 
+
     // Change userId field to seller
     const wishlists = products.map((product) => {
       const productObj = product.toObject();
       productObj.seller = productObj.userId;
-      delete productObj.userId;
       return productObj;
     });
 
     res.status(200).json({ count: wishlists.length, wishlists });
   }
+
+  // GET /api/products/:id/reviews - Get a product's reviews
+  static async getProductReviews(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) return next(new CustomError(400, 'Invalid product id'));
+
+    const reviews = await Review.find({ productId: id }).populate('userId', 'firstName lastName');
+    const data: IReview[] = reviews.map(review => review.toObject());
+
+
+    res.status(200).json({ count: data.length, data });
+    }
+
 }
