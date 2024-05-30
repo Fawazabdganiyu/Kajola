@@ -16,7 +16,7 @@ app.use(cookieParser());
 
 // indexRouter is the default route
 app.use('/', indexRouter);
- 
+
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/products', productRouter);
