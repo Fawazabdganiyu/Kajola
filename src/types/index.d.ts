@@ -7,3 +7,4 @@ export * from './product';
 export * from './chat';
 export * from './review';
 export * from './location';
+export * from './fileService';
