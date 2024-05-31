@@ -16,6 +16,10 @@ const userSchema = new Schema<IUser>({
   state: { type: String, required: true },
   userType: { type: String, enum: ['Buyer', 'Seller'], default: 'Buyer' },
   wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+  location: {
+    type: { type: String, default: 'Point' },
+    coordinates: { type: [Number], default: [0, 0], required: true },
+  },
   desc: String,
   img: String,
   resetToken: String,

@@ -14,7 +14,7 @@ export default class LocationService {
             type: 'Point',
             coordinates: [longitude, latitude]
           },
-          $maxDistance: maxDistance
+          $maxDistance: maxDistance || 5000 //5km
         }
       }
     });

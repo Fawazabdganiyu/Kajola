@@ -11,6 +11,10 @@ export interface IUser extends Document {
   state: string;
   userType: 'Buyer' | 'Seller';
   wishlist: string[];
+  location: {
+    type: string;
+    coordinates: number[];
+  };
   resetToken?: string;
   resetTokenExpiry?: Date;
   passwordUpdatedAt?: Date;
