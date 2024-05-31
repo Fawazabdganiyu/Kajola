@@ -12,7 +12,7 @@ describe('productController', () => {
   let res: any;
   let next: any;
   let user: IUser;
-  let userId: Schema.Types.ObjectId;
+  let userId: Types.ObjectId;
 
   beforeAll(async () => {
     await dbConnect();
@@ -229,7 +229,7 @@ describe('productController', () => {
       expect(next.mock.calls[0][0].status).toBe(403);
       expect(next.mock.calls[0][0].message).toBe('You are not authorized to update this product');
     });
-  
+
   });
 
   describe('getProducts', () => {
@@ -621,7 +621,7 @@ describe('productController', () => {
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         count: 1,
       }));
-      
+
     });
 
     it('should return a 403 error if the user is not authenticated', async () => {
