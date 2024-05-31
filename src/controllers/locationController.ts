@@ -5,6 +5,7 @@ import CustomError from '../utils/customError';
 
 
 export default class LocationController {
+  // POST /api/locations/find-sellers Find nearby findNearbySellers
   static async findNearbySellers(req: Request, res: Response, next: NextFunction) {
     const { product, latitude, longitude, maxDistance } = req.body;
 
@@ -25,6 +26,7 @@ export default class LocationController {
     }
   }
 
+  // PUT /api/locations/update-location Update seller's location
   static async updateSellerLocation(req: Request, res: Response, next: NextFunction) {
     const { latitude, longitude } = req.body;
 
