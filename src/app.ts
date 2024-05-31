@@ -5,6 +5,7 @@ import authRouter from  './routes/authRoutes'
 import productRouter from './routes/productRoutes';
 import userRouter from './routes/userRoutes';
 import chatRouter from './routes/chatRoutes';
+import reviewRouter from './routes/reviewRoutes';
 import errorHandler from './middlewares/errorHandler';
 import cors from 'cors';
 
@@ -16,11 +17,12 @@ app.use(cookieParser());
 
 // indexRouter is the default route
 app.use('/', indexRouter);
- 
+
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/products', productRouter);
 app.use('/api/chats', chatRouter);
+app.use('/api/reviews', reviewRouter);
 
 // Error handler
 app.use(errorHandler);
