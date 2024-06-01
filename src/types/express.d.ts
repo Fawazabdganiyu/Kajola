@@ -5,6 +5,9 @@ declare global {
     interface Request {
       userId?: string;
       verified?: boolean;
+      file: Express.Multer.File;
+      uploadedFile?: string;
+      uploadedFiles?: string[];
     }
   }
 }
