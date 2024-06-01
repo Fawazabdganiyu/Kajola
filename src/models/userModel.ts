@@ -7,6 +7,7 @@ import Product from './productModel';
 import Review from './reviewModel';
 
 const userSchema = new Schema<IUser>({
+  profilePic: String,
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
