@@ -7,6 +7,7 @@ import userRouter from './routes/userRoutes';
 import chatRouter from './routes/chatRoutes';
 import reviewRouter from './routes/reviewRoutes';
 import locationRouter from './routes/locationRoutes';
+import fileRouter from './routes/fileRoutes';
 import errorHandler from './middlewares/errorHandler';
 import cors from 'cors';
 
@@ -25,6 +26,7 @@ app.use('/api/products', productRouter);
 app.use('/api/chats', chatRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/locations', locationRouter);
+app.use('/api/files', fileRouter);
 
 // Error handler
 app.use(errorHandler);
