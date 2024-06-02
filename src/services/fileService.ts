@@ -14,20 +14,24 @@ const s3 = new S3({
 
 const storage = multer.memoryStorage();
 
-const upload = multer({
+export const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 } // limit file size to 5MB
 });
 
 // Upload file to S3
 const uploadToS3 = (file: Express.Multer.File, folder: string) => {
+  const key = `${folder}/${uuidv4()}${path.extname(file.originalname)}`;
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME!,
-    Key: `${folder}/${uuidv4()}${path.extname(file.originalname)}`,
+    Key: key,
     Body: file.buffer,
     ContentType: file.mimetype,
     ACL: 'public-read'
   };
+
+  // Add the S3 object key as the filepath
+  file.filepath = key;
 
   return s3.upload(params).promise();
 };
@@ -44,11 +48,14 @@ const uploadToLocal = (file: Express.Multer.File, folder: string) => {
 
   fs.writeFileSync(filePath, file.buffer);
 
+  // Add the file path to the request object
+  file.filepath = filePath;
+
   return Promise.resolve({ Location: `/uploads/${folder}/${fileName}` });
 };
 
 // Upload file to S3 or local storage based on the configuration
-const uploadFile = (file: Express.Multer.File, folder: string) => {
+export const uploadFile = (file: Express.Multer.File, folder: string) => {
   if (process.env.USE_AWS === 'true') {
     return uploadToS3(file, folder);
   } else {
@@ -56,4 +63,17 @@ const uploadFile = (file: Express.Multer.File, folder: string) => {
   }
 };
 
-export { upload, uploadFile };
+export const deleteFile = (filePath: string) => {
+  if (process.env.USE_AWS === 'true') {
+    const key = filePath.replace(`${env.AWS_BUCKET_URL}/`, '');
+    const params = {
+      Bucket: env.AWS_BUCKET_NAME!,
+      Key: key
+    };
+
+    return s3.deleteObject(params).promise();
+  } else {
+    fs.unlinkSync(filePath);
+    return Promise.resolve();
+  }
+}
