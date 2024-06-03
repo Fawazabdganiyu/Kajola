@@ -9,5 +9,11 @@ declare global {
       uploadedFile?: string;
       uploadedFiles?: string[];
     }
+
+    namespace Multer {
+      interface File {
+        filepath?: string;
+      }
+    }
   }
 }
