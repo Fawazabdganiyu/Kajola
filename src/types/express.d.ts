@@ -6,6 +6,7 @@ declare global {
       userId?: string;
       verified?: boolean;
       file: Express.Multer.File;
+      files: Express.Multer.File[];
       uploadedFile?: string;
       uploadedFiles?: string[];
     }
