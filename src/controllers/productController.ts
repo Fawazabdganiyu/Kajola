@@ -104,26 +104,30 @@ export default class ProductController {
         query['seller.state'] = user?.state;
       }
     }
+    try {
+      const products: IProduct[] = await Product.aggregate([
+        { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'seller' } },
+        { $unwind: '$seller' },
+        { $match: query },
+        { $sort: { averageRating: -1 } },
+        { $skip: (Number(page) - 1) * 10 },
+        { $limit: 10 }
+      ]);
+    
+      const matchedCount = products.length;
 
-    const products: IProduct[] = await Product.aggregate([
-      { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'seller' } },
-      { $unwind: '$seller' },
-      { $match: query },
-      { $sort: { averageRating: -1 } },
-      { $skip: (Number(page) - 1) * 10 },
-      { $limit: 10 }
-    ]);
-    const matchedCount = products.length;
+      const data = products.map(function (product) {
+        if (product.seller) {
+          const { _id, firstName, lastName, desc, img, userType, city, state, phone } = product.seller;
+          product.seller = { _id, firstName, lastName, desc, img, userType, city, state, phone };
+        }
+        return product;
+      });
 
-    const data = products.map(function (product) {
-      if (product.seller) {
-        const { _id, firstName, lastName, desc, img, userType, city, state, phone } = product.seller;
-        product.seller = { _id, firstName, lastName, desc, img, userType, city, state, phone };
-      }
-      return product;
-    });
-
-    res.status(200).json({ matchedCount, data });
+      res.status(200).json({ matchedCount, data });
+    } catch (error: any) {
+      return next(new CustomError(400, 'Invalid query parameters'));
+    }
   }
 
   // GET /api/products/:id - Get a product by id
@@ -149,8 +153,8 @@ export default class ProductController {
     }
 
     const products = await Product.find({ userId: id });
-    if (!products) {
-      return next(new CustomError(404, 'Products not found'));
+    if (products.length === 0) {
+      return next(new CustomError(404, 'No product found for this user'));
     }
 
     const data: IProduct[] = products.map(product => product.toObject());
@@ -225,7 +229,10 @@ export default class ProductController {
       return next(new CustomError(400, 'Product not in wishlist'));
     }
 
-    user.wishlist = user.wishlist.filter((productId: string) => productId !== id);
+    user.wishlist = user.wishlist.filter((productId: string) => productId.toString() !== id );
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Product successfully removed from wishlist' });
   }
 
   // GET /api/products/wishlist - Get user's wishlist
@@ -243,13 +250,16 @@ export default class ProductController {
       .populate('userId', 'firstName lastName desc img city state phone');
 
     // Change userId field to seller
-    const wishlists = products.map((product) => {
+    const wishlist = products.map((product) => {
       const productObj = product.toObject();
       productObj.seller = productObj.userId;
-      return productObj;
+      // Remove redundant userId field
+      const { userId, ...rest } = productObj;
+
+      return rest;
     });
 
-    res.status(200).json({ count: wishlists.length, wishlists });
+    res.status(200).json({ count: wishlist.length, wishlist });
   }
 
   // GET /api/products/:id/reviews - Get a product's reviews
@@ -258,10 +268,11 @@ export default class ProductController {
     if (!mongoose.Types.ObjectId.isValid(id)) return next(new CustomError(400, 'Invalid product id'));
 
     const reviews = await Review.find({ productId: id }).populate('userId', 'firstName lastName');
+    if (reviews.length === 0) {
+      return next(new CustomError(404, 'No reviews found for this product'));
+    }
     const data: IReview[] = reviews.map(review => review.toObject());
 
-
     res.status(200).json({ count: data.length, data });
-    }
-
+  }
 }
