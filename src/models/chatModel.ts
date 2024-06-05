@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { IChat } from '../types';
 
-const chatSchema = new Schema({
+const chatSchema = new Schema<IChat>({
   participants: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }],
   messages: [
     {

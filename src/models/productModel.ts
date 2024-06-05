@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { IProduct } from '../types';
 
-
 const productSchema = new Schema<IProduct>({
   name: { type: String, required: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -17,46 +16,36 @@ const productSchema = new Schema<IProduct>({
   updatedAt: { type: Date, default: Date.now },
 });
 
-
 productSchema.methods.addReview = function (rating: number): Promise<IProduct>{
   // Add the new rating to the ratings array
   this.ratings.push(rating);
 
-
   // Increment the reviewCount
   this.reviewCount += 1;
 
-
   // Calculate the new averageRating
-  const sum = this.ratings.reduce((acc: number, curr: number) => acc + curr, 0);
+  const sum: number = this.ratings.reduce((acc: number, curr: number) => acc + curr, 0);
   this.averageRating = sum / this.ratings.length;
-
 
   // Save the updated product
   return this.save();
 };
-
 
 productSchema.methods.removeReview = function (rating: number): Promise<IProduct>{
   // Remove the rating from the ratings array
   const index = this.ratings.indexOf(rating);
   if (index > -1) {
-  this.ratings.splice(index, 1);
+    this.ratings.splice(index, 1);
   }
-
-
   // Decrement the reviewCount
   this.reviewCount -= 1;
 
-
   // Calculate the new averageRating
-  const sum = this.ratings.reduce((acc: number, curr: number) => acc + curr, 0);
-  this.averageRating = sum / this.ratings.length;
-
+  const sum: number = this.ratings.reduce((acc: number, curr: number) => acc + curr, 0);
+  this.averageRating = this.ratings.length? (sum / this.ratings.length) : 0;
 
   // Save the updated product
   return this.save();
 };
 
-
-export default model('Product', productSchema);
+export default model<IProduct>('Product', productSchema);
