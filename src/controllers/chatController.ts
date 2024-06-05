@@ -4,7 +4,7 @@ import User from '../models/userModel';
 import CustomError from '../utils/customError';
 
 export default class ChatController {
-  // POST /api/chats Create a new chat
+  // POST /api/chats/new_chat Create a new chat
   public static async createChat(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { buyerId, sellerId } = req.body;
 
@@ -27,7 +27,7 @@ export default class ChatController {
     }
   }
 
-  // GET /api/chats Get all chats for a user
+  // GET /api/chats/conversations Get all chats for a user
   public static async getUserChats(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const userId = req.userId;
     const chats = await Chat.find({ participants: userId }).populate('participants', 'name email');

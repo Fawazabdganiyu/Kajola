@@ -5,7 +5,7 @@ import authMiddleware from '../middlewares/authMiddleware';
 const router = Router();
 
 // Chat routes
-router.post('/newchat', authMiddleware, ChatController.createChat);
+router.post('/new_chat', authMiddleware, ChatController.createChat);
 router.get('/conversations', authMiddleware, ChatController.getUserChats);
 router.post('/messages', authMiddleware, ChatController.sendMessage);
 router.get('/messages/:chatId', authMiddleware, ChatController.getMessages);
