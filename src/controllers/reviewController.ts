@@ -1,12 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 
-
 import CustomError from '../utils/customError';
 import Product from '../models/productModel';
 import Review from '../models/reviewModel';
-import mongoose, { mongo } from 'mongoose';
-import { IReview } from '../types';
-
+import mongoose from 'mongoose';
 
 export default class ReviewController {
 // POST /api/reviews - Post a new review
@@ -14,12 +11,10 @@ export default class ReviewController {
     const { productId, rating, comment } = req.body;
     const userId = req.userId;
 
-
     // Validate input
     if (!productId) return next(new CustomError(400, 'Product id is missing'));
     if (!rating) return next(new CustomError(400, 'Rating is missing'));
     if (!comment) return next(new CustomError(400, 'Comment is missing'));
-
 
     // Check if the user has already reviewed the product
     const existingReview = await Review.findOne({ userId, productId });
@@ -48,15 +43,18 @@ export default class ReviewController {
     const { rating, comment } = req.body;
     const userId = req.userId;
 
-
-    if (!mongoose.Types.ObjectId.isValid(id)) return next(new CustomError(400, 'Invalid review id'));
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new CustomError(400, 'Invalid review id'));
+    }
 
     // Check if the review exists
     const review = await Review.findById(id);
     if (!review) return next(new CustomError(404, 'Review not found'));
 
     // Check if the user is the review owner
-    if (review.userId.toString() !== userId?.toString()) return next(new CustomError(403, 'Not authorized to update review'));
+    if (review.userId.toString() !== userId?.toString()) {
+      return next(new CustomError(403, 'Not authorized to update review'));
+    }
 
     // Update review rating in product
     const product = await Product.findById(review.productId);
@@ -65,11 +63,14 @@ export default class ReviewController {
     // Remove previous review rating from product
     await product.removeReview(review.rating);
 
-
     // Update review
     review.rating = rating || review.rating;
     review.comment = comment || review.comment;
-    review.editHistory.push({ rating: review.rating, comment: review.comment, editedAt: new Date() });
+    review.editHistory.push({
+      rating: review.rating,
+      comment: review.comment,
+      editedAt: new Date()
+    });
 
     try {
       await review.save();
