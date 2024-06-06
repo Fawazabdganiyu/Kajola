@@ -37,7 +37,7 @@ export default class ChatController {
     return res.status(200).json(chats);
   }
 
-  // POST /api/messages Send a message
+  // POST /api/chats/messages Send a message
   public static async sendMessage(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { chatId, content } = req.body;
     const senderId = req.userId;
