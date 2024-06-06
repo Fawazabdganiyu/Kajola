@@ -14,7 +14,7 @@ export default class UsersController {
         return next(new CustomError(401, 'Unauthorized, user not found'));
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userData } = user.toObject();
+      const { password, resetToken, resetTokenExpiry, ...userData } = user.toObject();
       res.status(200).json(userData);
     } catch (error: any) {
       next(new CustomError(500, 'server error'));
@@ -32,7 +32,7 @@ export default class UsersController {
       return next(new CustomError(404, 'User not found'));
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userData } = user.toObject();
+    const { password, resetToken, resetTokenExpiry, ...userData } = user.toObject();
     res.status(200).json(userData);
   }
 

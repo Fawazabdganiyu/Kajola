@@ -7,7 +7,6 @@ import User from '../../models/userModel';
 import UsersController from '../../controllers/userController';
 import { IUser } from '../../types';
 import { Schema, Types } from 'mongoose';
-import exp from 'constants';
 
 describe('UsersController', () => {
   let res: any;
@@ -144,6 +143,7 @@ describe('UsersController', () => {
 
     it('should call next with a 404 error when no user is found', async () => {
       req.params.id = new Types.ObjectId();
+      req.body = { city: 'Ibadan' };
 
       await UsersController.updateUser(req, res, next);
 
@@ -152,10 +152,13 @@ describe('UsersController', () => {
 
     it('should call next with a 403 error when user is not authorized to update user', async () => {
       req.userId = new Types.ObjectId();
+      req.body = { city: 'Ibadan' };
 
       await UsersController.updateUser(req, res, next);
 
-      expect(next).toHaveBeenCalledWith(new CustomError(403, 'You are not authorized to update this user'));
+      expect(next).toHaveBeenCalledWith(
+        new CustomError(403, 'You are not authorized to update this user')
+      );
     });
 
     it('should call next with a 400 error when an invalid user id is provided', async () => {
@@ -169,17 +172,9 @@ describe('UsersController', () => {
     it('should not update user data when no update fields are provided', async () => {
       await UsersController.updateUser(req, res, next);
 
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        _id: user._id,
-        firstName: 'testUser',
-        lastName: 'testUser',
-        email: 'aaaa@gmail.com',
-        phone: '1234567890',
-        city: 'Saki',
-        state: 'Oyo',
-      }));
-      expect(next).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalledWith(
+        new CustomError(400, 'Only city, state, phone and desc fields are allowed to be updated')
+      );
     });
 
     it('should not update user data when an invalid update field is provided', async () => {
@@ -187,16 +182,9 @@ describe('UsersController', () => {
 
       await UsersController.updateUser(req, res, next);
 
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        _id: user._id,
-        firstName: 'testUser',
-        lastName: 'testUser',
-        email: 'aaaa@gmail.com',
-        phone: '1234567890',
-        city: 'Saki',
-        state: 'Oyo',
-      }));
+      expect(next).toHaveBeenCalledWith(
+        new CustomError(400, 'Only city, state, phone and desc fields are allowed to be updated')
+      );
     });
 
     it('should not update user data when firstName is provided', async () => {
@@ -204,16 +192,9 @@ describe('UsersController', () => {
 
       await UsersController.updateUser(req, res, next);
 
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        _id: user._id,
-        firstName: 'testUser',
-        lastName: 'testUser',
-        email: 'aaaa@gmail.com',
-        phone: '1234567890',
-        city: 'Saki',
-        state: 'Oyo',
-      }));
+      expect(next).toHaveBeenCalledWith(
+        new CustomError(400, 'Only city, state, phone and desc fields are allowed to be updated')
+      );
     });
 
   });
