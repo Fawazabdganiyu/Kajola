@@ -59,7 +59,11 @@ export default class ProductController {
     // Ensure only specific fields can be updated
     const { name, category, description, price, negotiable } = req.body;
     if (!name && !category && !description && !price && !negotiable) {
-      return next(new CustomError(400, 'Only name, category, description, price and negotiable fields are allowed to be updated'));
+      return next(
+        new CustomError(
+          400, 'Only name, category, description, price and negotiable fields are allowed to be updated'
+        )
+      );
     }
 
     // Check if the product exists
@@ -118,6 +122,7 @@ export default class ProductController {
 
       const data = products.map(function (product) {
         if (product.seller) {
+          // Extract only necessary fields from seller
           const { _id, firstName, lastName, desc, img, userType, city, state, phone } = product.seller;
           product.seller = { _id, firstName, lastName, desc, img, userType, city, state, phone };
         }
@@ -145,7 +150,7 @@ export default class ProductController {
     res.status(200).json(product.toObject());
   }
 
-  // GET /api/products/user/:userId - Get all products by a user
+  // GET /api/products/user/:id - Get all products by a user
   static async getProductsByUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {

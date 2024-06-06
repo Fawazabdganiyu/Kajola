@@ -6,7 +6,7 @@ export interface IProduct extends Document {
   userId: Types.ObjectId;
   category: string;
   description: string;
-  price: string;
+  price: number;
   negotiable: boolean;
   images: string[];
   ratings: number[];

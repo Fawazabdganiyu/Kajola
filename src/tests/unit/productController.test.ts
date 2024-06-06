@@ -5,7 +5,6 @@ import Product from '../../models/productModel';
 import ProductController from '../../controllers/productController';
 import User from '../../models/userModel';
 import { IProduct, IUser } from '../../types';
-import exp from 'constants';
 
 describe('productController', () => {
   let req: any;
@@ -129,7 +128,7 @@ describe('productController', () => {
           name: 'Laptop',
           category: 'Electronics',
           description: 'High performance',
-          price: 1500,
+          price: "1500",
           userId
         });
         await ProductController.createProduct(req, res, next);
@@ -190,7 +189,7 @@ describe('productController', () => {
         name: 'Nail',
         category: 'Building materials',
         description: 'High quality',
-        price: 100,
+        price: "100",
         userId,
       });
       req.params = { id: product._id };
@@ -212,6 +211,7 @@ describe('productController', () => {
 
     it('should return a 404 error if the product does not exist', async () => {
       req.params.id = new Types.ObjectId();
+      req.body = { name: 'Screw', category: 'Building materials', description: 'High quality', price: 200 };
 
       await ProductController.updateProduct(req, res, next);
 
@@ -222,6 +222,7 @@ describe('productController', () => {
 
     it('should return a 403 error if the user is not authorized to update the product', async () => {
       req.userId = new Types.ObjectId();
+      req.body = { name: 'Screw', category: 'Building materials', description: 'High quality', price: 200 };
 
       await ProductController.updateProduct(req, res, next);
 
@@ -251,7 +252,7 @@ describe('productController', () => {
           name: 'Drill',
           category: 'Electronics',
           description: 'High quality',
-          price: 100,
+          price: "100",
           userId,
         },
         {
@@ -648,7 +649,7 @@ describe('productController', () => {
       await ProductController.getWishlist(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ count: 0, wishlists: [] }));
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ count: 0, wishlist: [] }));
     });
 
     it ('should return empty data list when the product in user wishlist does not exist', async () => {
@@ -658,7 +659,7 @@ describe('productController', () => {
       await ProductController.getWishlist(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ count: 0, wishlists: [] }));
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ count: 0, wishlist: [] }));
     });
   });
 });

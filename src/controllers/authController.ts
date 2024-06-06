@@ -55,7 +55,20 @@ export default class AuthController {
       // Send verification email
       // const verificationLink = `http://localhost:${env.PORT}/api/auth/verify/${token}`;
       const verificationLink = `${req.protocol}://${req.get('host')}/api/auth/verify/${token}`;
-      const mail = `<div style="margin: 45px 25px"><b>Welcome ${firstName} ${lastName}!</b><p>Thank you for signing up for Kajola</p><p>Click the link below to verify your email:</p><br><a href=${verificationLink}><button style="background-color: #4CAF50; border: none; border-radius: 5px; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 18px; cursor: pointer;">Confirm my account</button></a><br><p>You can only enjoy our service better by verifying your account</p><br><p>Thank you</p><p>Kajola Team</p></div>`;
+      const mail = `
+        <div style="margin: 45px 25px">
+          <b>Welcome ${firstName} ${lastName}!</b>
+          <p>Thank you for signing up for Kajola</p>
+          <p>Click the link below to verify your email:</p>
+          <br>
+          <a href=${verificationLink}><button style="background-color: #4CAF50; border: none; border-radius: 5px; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 18px; cursor: pointer;">Confirm my account</button></a>
+          <br>
+          <p>You can only enjoy our service better by verifying your account</p>
+          <br>
+          <p>Thank you</p>
+          <p>Kajola Team</p>
+        </div>
+      `;
       await sendMail(email, 'Kajola account confirmation', mail);
 
       return res.status(201).send('User registered. Please check your email to verify your account.');
@@ -147,11 +160,23 @@ export default class AuthController {
 
     // Send password reset url to user's email
     const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/password-reset/${token}`;
-    const message = `You just requested a password reset. Click the link below to reset your password:\n\n${resetUrl}\n\nIf you didn't initiate this process, please ignore this email.`;
-
+    const htmlMessage = `
+  <div style="margin: 45px 25px">
+    <b>Welcome ${user.firstName} ${user.lastName}!</b>
+    <p>You just requested a password reset.</p>
+    <p>Click the link below to reset your password:</p>
+    <br>
+    <a href=${resetUrl}><button style="background-color: #4CAF50; border: none; border-radius: 5px; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 18px; cursor: pointer;">Reset my password</button></a>
+    <br>
+    <p>If you didn't initiate this process, please ignore this email.</p>
+    <br>
+    <p>Thank you</p>
+    <p>Kajola Team</p>
+  </div>
+`;
     // Send email with nodemailer
     try {
-      sendMail(user.email, 'Password Reset Token', message );
+      sendMail(user.email, 'Password Reset Token', htmlMessage);
       res.status(200).json({ message: 'Reset token sent to email' });
     } catch (err) {
       await User.findByIdAndUpdate(user._id, { resetToken: undefined, resetTokenExpiry: undefined });
@@ -167,17 +192,35 @@ export default class AuthController {
       return next(new CustomError(400, 'Invalid or expired reset token'));
     }
 
-    // Update user password
-    await User.findByIdAndUpdate(
-      user._id,
-      {
-        password: req.body.password,
-        resetToken: undefined,
-        resetTokenExpiry: undefined,
-        passwordUpdatedAt: Date.now()
-      }
-    );
+    // There should be a redirection to the frontend password reset page
+    // where the user can enter the new password
+    // and the new password is resent here with
+    // put request for the new password
+    // validation and update
 
-    res.status(200).json({ message: 'Password successfully updated' });
+    // Validate new password
+    if (!req.body.password) {
+      return next(new CustomError(400, 'Password is required'));
+    }
+
+    if (!validator.isStrongPassword(req.body.password)) {
+      return next(new CustomError(400, 'Password is not strong enough'));
+    }
+
+    // Update user password
+    try {
+      await User.findByIdAndUpdate(
+        user._id,
+        {
+          password: req.body.password,
+          resetToken: undefined,
+          resetTokenExpiry: undefined,
+          passwordUpdatedAt: Date.now()
+        }
+      );
+      res.status(200).json({ message: 'Password successfully updated' });
+    } catch (err) {
+      return next(new CustomError(500, (err as Error).message));
+    }
   }
 }
