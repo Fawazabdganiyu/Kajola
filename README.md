@@ -60,6 +60,12 @@ This repository currently contains the backend API for the Kajola hyperlocal mar
     PORT=3000
     MONGODB_URI=<your_mongodb_uri>
     JWT_SECRET=<your_jwt_secret>
+    JWT_EXPIRATION=<expiration_period>
+    EMAIL_HOST=<email_service_provider>
+    EMAIL_PORT=<mail_port>
+    EMAIL_USERNAME=<sender_authorized_username>
+    EMAIL_PASSWORD=<sender_authorized_password>
+    SMTP_USER='"Kajola Team" <application_email>'
     ```
 4. Start the server
     ```sh
@@ -103,6 +109,8 @@ This repository currently contains the backend API for the Kajola hyperlocal mar
 - **POST /api/reviews:** Create a new review
 - **PUT /api/reviews/:id:** Update a review
 - **DELETE /api/reviews/:id:** Delete a review
+
+Click [here](https://documenter.getpostman.com/view/34594399/2sA3XJjPbD) for [**full API documentation**](https://documenter.getpostman.com/view/34594399/2sA3XJjPbD)
 
 ## Deployment
 The backend API can be deployed to a cloud platform such as Heroku, AWS, or Google Cloud Platform. The API can be deployed using a CI/CD pipeline for automated deployment and scaling. The API can be monitored using logging and monitoring tools such as New Relic, Datadog, or Prometheus. The API can be secured using firewalls, encryption, and access control policies.
