@@ -2,7 +2,7 @@ import { compare, hash, genSalt } from 'bcryptjs';
 import { Schema, model } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import env from '../config/environment';
-import { IUser } from '../types/user';
+import { IUser } from '../types';
 
 const userSchema = new Schema<IUser>({
   firstName: {
@@ -54,14 +54,8 @@ const userSchema = new Schema<IUser>({
     type: Boolean,
     default: false,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
+    }, {
+    timestamps: true,  // This option will add createdAt and updatedAt fields automatically
 });
 
 // Hash the password before saving the user model

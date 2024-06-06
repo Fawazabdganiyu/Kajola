@@ -1,5 +1,4 @@
 import { model, Types } from 'mongoose';
-
 import { dbConnect, dbDisconnect } from '../../utils/mongoMemoryServer';
 import Product from '../../models/productModel';
 
